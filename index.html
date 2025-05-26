@@ -202,6 +202,7 @@ let magnetActive = false; // Estado do poder imã
 let magnetEndTime = 0; // Tempo de término do poder imã
 let shieldActive = false; // Estado do poder escudo
 let shieldEndTime = 0; // Tempo de término do poder escudo
+let lastObstacleX = 0; // Rastrear a posição do último obstáculo
 
 function startGame() {
   setCanvasSize();  jacare = {
@@ -232,6 +233,7 @@ function startGame() {
   // Reiniciar tempos dos poderes
   magnetEndTime = 0;
   shieldEndTime = 0;
+  lastObstacleX = 0; // Reiniciar a posição do último obstáculo
   document.getElementById('score').innerText = "Conchas: 0";
   document.getElementById('gameover').style.display = 'none';
   spawnShell();
@@ -261,12 +263,26 @@ function spawnObstacle() {
   const interval = Math.random() * (w() * OBSTACLE_FREQUENCY_MAX) + w() * OBSTACLE_FREQUENCY_MIN;
   setTimeout(() => {
     if (!gameover && isLandscape()) {
-      obstacles.push({
-        x: w() + OBSTACLE_W(),
-        y: GROUND_Y() - OBSTACLE_H() + 8,
-        w: OBSTACLE_W(),
-        h: OBSTACLE_H()
-      });
+      // Verificar se há espaço suficiente para um novo obstáculo
+      const minSpaceBetweenObstacles = w() * 0.5; // Espaço mínimo de 50% da largura da tela
+      
+      // Se não houver obstáculos ou o último obstáculo já estiver suficientemente distante
+      if (obstacles.length === 0 || 
+          (lastObstacleX - (w() + OBSTACLE_W())) < -minSpaceBetweenObstacles) {
+        
+        // Criar novo obstáculo
+        const newObstacle = {
+          x: w() + OBSTACLE_W(),
+          y: GROUND_Y() - OBSTACLE_H() + 8,
+          w: OBSTACLE_W(),
+          h: OBSTACLE_H()
+        };
+        
+        obstacles.push(newObstacle);
+        lastObstacleX = newObstacle.x; // Atualizar a posição do último obstáculo
+      }
+      
+      // Programar próxima verificação
       spawnObstacle();
     }
   }, interval / speed * 13);
@@ -602,10 +618,17 @@ function loop() {
   if (dist > minDist) {
     jacare.x += Math.min(speed * 0.75, dist * 0.05); // Velocidade de perseguição mais lenta
   }
-
   // Obstáculos
   for (let o of obstacles) o.x -= speed;
-  obstacles = obstacles.filter(o => o.x + o.w > 0);
+  obstacles = obstacles.filter(o => {
+    // Manter apenas obstáculos visíveis na tela
+    const isVisible = o.x + o.w > 0;
+    // Quando um obstáculo sai da tela, atualizar a variável lastObstacleX
+    if (!isVisible && lastObstacleX === o.x) {
+      lastObstacleX = 0; // Resetar o valor para permitir novos obstáculos
+    }
+    return isVisible;
+  });
 
   // Colisão menina/obstáculo
   for (let i = 0; i < obstacles.length; i++) {
