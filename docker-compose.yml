@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  corre-luisa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+    restart: unless-stopped
