@@ -465,7 +465,7 @@ function drawBeach() {
 
 function drawGirl() {
   ctx.save();
-  ctx.translate(girl.x + girl.w/2, girl.y + girl.h/2);
+  ctx.translate(girl.x + girl.w/2, girl.y + 30 + girl.h/2);
   const jumpAmt = girl.jumping ? 0.12 : 0;
   ctx.rotate(jumpAmt * Math.sin(Date.now()/110));
   
