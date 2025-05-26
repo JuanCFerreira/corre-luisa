@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Endless Runner - Menina na Praia</title>
+  <title>Corre Luisa</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">  <style>
     html, body {
       margin: 0;
@@ -122,16 +122,15 @@ let OBSTACLE_W = () => w() * 0.045, OBSTACLE_H = () => h() * 0.10;
 let girl, jacare, shells, obstacles, score, gameover, bgOffset, speed, touchActive, started;
 
 function startGame() {
-  setCanvasSize();
-  jacare = {
-    x: w() * 0.06,
+  setCanvasSize();  jacare = {
+    x: w() * 0.03, // Posição inicial mais à esquerda
     y: GROUND_Y() - JACARE_H() + 12,
     w: JACARE_W(),
     h: JACARE_H()
     // Removido jacare.speed, não é mais usado
   };
   girl = {
-    x: jacare.x + jacare.w + w() * 0.20,
+    x: jacare.x + jacare.w + w() * 0.30, // Posição inicial mais à direita (aumentado de 0.20 para 0.30)
     y: GROUND_Y() - GIRL_H(),
     vy: 0,
     w: GIRL_W(),
@@ -309,12 +308,11 @@ function loop() {
     girl.vy = 0;
     girl.jumping = false;
   }
-
-  // Jacaré persegue a menina, mas nunca alcança sozinho
-  let dist = girl.x - jacare.x - jacare.w * 0.7;
-  let minDist = girl.w * 0.5;
+  // Jacaré persegue a menina, mas fica mais afastado
+  let dist = girl.x - jacare.x - jacare.w * 0.2;
+  let minDist = girl.w * 2.5; // Aumentando a distância mínima para 2.5x a largura da menina
   if (dist > minDist) {
-    jacare.x += Math.min(speed * 0.82, dist * 0.08);
+    jacare.x += Math.min(speed * 0.75, dist * 0.05); // Velocidade de perseguição mais lenta
   }
 
   // Obstáculos
