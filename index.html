@@ -101,6 +101,54 @@
       box-shadow: 2px 2px 8px #222;
       cursor: pointer;
     }
+    #startscreen {
+      position: absolute;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: linear-gradient(to bottom, #87ceeb, #1e90ff);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 2em;
+      text-align: center;
+      z-index: 4;
+    }
+    #startscreen h1 {
+      font-size: 2em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+      animation: pulse 1.5s infinite;
+    }
+    #startscreen button {
+      margin-top: 30px;
+      font-size: 1em;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 15px;
+      background: #ffdb58;
+      color: #444;
+      font-weight: bold;
+      box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #startscreen button:hover {
+      transform: scale(1.05);
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.5);
+    }
+    #startscreen .character-preview {
+      width: 180px;
+      height: 180px;
+      margin: 20px 0;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
     #rotate {
       display: none;
       position: absolute;
@@ -166,6 +214,12 @@
     <div id="gameover">
       <div id="finalmsg"></div>
       <button onclick="restart()">Jogar novamente</button>
+    </div>
+    <div id="startscreen">
+      <h1>Corre Luisa</h1>
+      <div class="character-preview" id="character-preview"></div>
+      <p>Ajude Luisa a fugir do jacaré e coletar conchas!</p>
+      <button onclick="startGameFromMenu()">Começar!</button>
     </div>
     <canvas id="game"></canvas>
   </div>
@@ -274,6 +328,73 @@ function loadLuisaSprites() {
   loadSprite(1);
 }
 
+// Inicia o jogo a partir da tela de menu
+function startGameFromMenu() {
+  // Esconder a tela de início
+  document.getElementById('startscreen').style.display = 'none';
+  
+  // Mostrar os elementos do jogo
+  document.getElementById('score').style.display = '';
+  document.getElementById('day-night-indicator').style.display = '';
+  
+  // Iniciar o jogo
+  startGame();
+  
+  // Iniciar a música de fundo (se existir)
+  const backgroundMusic = document.getElementById('backgroundMusic');
+  if (backgroundMusic) {
+    backgroundMusic.play().catch(error => {
+      console.log("Reprodução automática bloqueada pelo navegador:", error);
+    });
+  }
+}
+
+// Função para pré-carregar e animar o personagem na tela inicial
+function preloadCharacterAnimation() {
+  const characterPreview = document.getElementById('character-preview');
+  
+  // Carregar os sprites para animação na tela inicial
+  const previewSprites = [];
+  let currentPreviewIndex = 0;
+  
+  function loadPreviewSprite(index) {
+    if (index > 8) {
+      // Após carregar todos, inicie a animação
+      startPreviewAnimation();
+      return;
+    }
+    
+    const img = new Image();
+    img.src = `sprites/luisa-runn/${index}.png`;
+    img.onload = function() {
+      previewSprites[index-1] = img;
+      loadPreviewSprite(index + 1);
+    };
+    img.onerror = function() {
+      console.error(`Failed to load preview sprite ${index}`);
+      loadPreviewSprite(index + 1);
+    };
+  }
+  
+  function startPreviewAnimation() {
+    if (previewSprites.length === 0) return;
+    
+    // Definir a imagem inicial
+    characterPreview.style.backgroundImage = `url(${previewSprites[0].src})`;
+    
+    // Animar os sprites na pré-visualização
+    setInterval(() => {
+      currentPreviewIndex = (currentPreviewIndex + 1) % previewSprites.length;
+      if (previewSprites[currentPreviewIndex]) {
+        characterPreview.style.backgroundImage = `url(${previewSprites[currentPreviewIndex].src})`;
+      }
+    }, 150);
+  }
+  
+  // Iniciar carregamento dos sprites para a pré-visualização
+  loadPreviewSprite(1);
+}
+
 function startGame() {
   setCanvasSize();  jacare = {
     x: w() * 0.03, // Posição inicial mais à esquerda
@@ -296,7 +417,7 @@ function startGame() {
   shieldActive = false; // Desativar escudo
   score = 0;
   speed = w() * 0.009; // Velocidade inicial (metade da velocidade máxima)
-  bgOffset = 0;  started = false;
+  bgOffset = 0;  started = true; // Agora o jogo está iniciado
   gameover = false;
   // Reiniciar tempos dos poderes
   magnetEndTime = 0;
@@ -757,7 +878,11 @@ function drawPowerIcon(x, y, size, type, timeLeft, maxTime) {
 }
 
 function loop() {
-  if (gameover || !isLandscape()) return;
+  if (gameover || !isLandscape() || !started) {
+    // Continuar a animação mesmo quando não estiver jogando
+    requestAnimationFrame(loop);
+    return;
+  }
   ctx.clearRect(0,0,w(),h());
 
   bgOffset -= speed * 2;
@@ -994,6 +1119,10 @@ function gameOver(msg) {
 }
 
 function restart() {
+  // Ocultar a tela de game over
+  document.getElementById('gameover').style.display = 'none';
+  
+  // Iniciar o jogo diretamente (sem mostrar a tela inicial)
   startGame();
 }
 
@@ -1006,17 +1135,31 @@ function checkOrientation() {
       document.getElementById('rotate').style.display = "flex";
       canvas.style.display = "none";
       document.getElementById('score').style.display = "none";
+      document.getElementById('startscreen').style.display = "none";
+      document.getElementById('day-night-indicator').style.display = "none";
       return;
     }
   }
   
   // Exibe o jogo
   document.getElementById('rotate').style.display = "none";
-  canvas.style.display = "";
-  document.getElementById('score').style.display = "";
+  canvas.style.display = "block";
   
-  if (gameover) return;
-  if (!started) startGame();
+  // Se o jogo não foi iniciado ou acabou, exibe a tela adequada
+  if (gameover) {
+    return;
+  } else if (!started) {
+    // Mostrar tela inicial
+    document.getElementById('startscreen').style.display = "flex";
+    // Ocultar elementos do jogo
+    document.getElementById('score').style.display = "none";
+    document.getElementById('day-night-indicator').style.display = "none";
+  } else {
+    // Jogo em andamento
+    document.getElementById('startscreen').style.display = "none";
+    document.getElementById('score').style.display = "block";
+    document.getElementById('day-night-indicator').style.display = "block";
+  }
 }
 window.addEventListener('resize', checkOrientation);
 
@@ -1101,10 +1244,24 @@ function checkMobileFullscreen() {
 // Início
 checkOrientation();
 checkMobileFullscreen();
+preloadCharacterAnimation(); // Inicializar a animação do personagem na tela inicial
+
+// Inicializar as variáveis do jogo
+started = false;
+gameover = false;
 
 // Função para atualizar o indicador dia/noite
 function updateDayNightIndicator() {
   const indicator = document.getElementById('day-night-indicator');
+  
+  // Mostrar o indicador apenas quando o jogo está ativo
+  if (!started || gameover) {
+    indicator.style.display = 'none';
+    return;
+  } else {
+    indicator.style.display = 'block';
+  }
+  
   const nextCycle = 50 - (score % 50); // Calcular quantas conchas faltam para o próximo ciclo
   
   // Definir ícone e texto apropriados para o modo atual
@@ -1133,8 +1290,17 @@ window.addEventListener('resize', function() {
     initStars();
   }
 });
+
+// Início
+checkOrientation();
+checkMobileFullscreen();
+preloadCharacterAnimation(); // Inicializar a animação do personagem na tela inicial
+
+// Inicializar as variáveis do jogo
+started = false;
+gameover = false;
 </script>
-<audio id="backgroundMusic" autoplay loop>
+<audio id="backgroundMusic" loop>
   <source src="songs/background-music.mp3" type="audio/mpeg">
   Seu navegador não suporta o elemento de áudio.
 </audio>
