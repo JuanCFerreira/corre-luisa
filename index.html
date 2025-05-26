@@ -182,8 +182,26 @@ let GIRL_W = () => w() * 0.08, GIRL_H = () => h() * 0.32;
 let JACARE_W = () => w() * 0.13, JACARE_H = () => h() * 0.23;
 let SHELL_SIZE = () => w() * 0.045;
 let OBSTACLE_W = () => w() * 0.045, OBSTACLE_H = () => h() * 0.10;
+let POWERUP_SIZE = () => w() * 0.06; // Tamanho dos itens de poder
+
+// Constantes para controle da frequência dos itens
+const SHELL_FREQUENCY_MIN = 0.45; // Mínimo intervalo para conchas (em larguras de tela)
+const SHELL_FREQUENCY_MAX = 0.6;  // Máximo intervalo para conchas
+const OBSTACLE_FREQUENCY_MIN = 0.55; // Mínimo intervalo para obstáculos
+const OBSTACLE_FREQUENCY_MAX = 0.5;  // Máximo intervalo para obstáculos
+const POWERUP_FREQUENCY_MIN = 4.0;   // Mínimo intervalo para power-ups (muito mais raro)
+const POWERUP_FREQUENCY_MAX = 6.0;   // Máximo intervalo para power-ups
+
+// Duração dos power-ups em milissegundos
+const MAGNET_DURATION = 8000;  // Duração do imã: 8 segundos
+const SHIELD_DURATION = 6000;  // Duração do escudo: 6 segundos
 
 let girl, jacare, shells, obstacles, score, gameover, bgOffset, speed, touchActive, started;
+let powerups = []; // Array para armazenar os itens de poder (imã e escudo)
+let magnetActive = false; // Estado do poder imã
+let magnetEndTime = 0; // Tempo de término do poder imã
+let shieldActive = false; // Estado do poder escudo
+let shieldEndTime = 0; // Tempo de término do poder escudo
 
 function startGame() {
   setCanvasSize();  jacare = {
@@ -203,21 +221,28 @@ function startGame() {
   };
   shells = [];
   obstacles = [];
+  powerups = []; // Reiniciar array de itens de poder
+  magnetActive = false; // Desativar imã
+  shieldActive = false; // Desativar escudo
   score = 0;
   speed = w() * 0.009;
   bgOffset = 0;
   started = false;
   gameover = false;
+  // Reiniciar tempos dos poderes
+  magnetEndTime = 0;
+  shieldEndTime = 0;
   document.getElementById('score').innerText = "Conchas: 0";
   document.getElementById('gameover').style.display = 'none';
   spawnShell();
   spawnObstacle();
+  spawnPowerup(); // Iniciar geração de itens de poder
   requestAnimationFrame(loop);
 }
 
 // Shells (conchas)
 function spawnShell() {
-  const interval = Math.random() * (w() * 0.6) + w() * 0.45;
+  const interval = Math.random() * (w() * SHELL_FREQUENCY_MAX) + w() * SHELL_FREQUENCY_MIN;
   setTimeout(() => {
     if (!gameover && isLandscape()) {
       shells.push({
@@ -233,7 +258,7 @@ function spawnShell() {
 
 // Obstáculos (pedras)
 function spawnObstacle() {
-  const interval = Math.random() * (w() * 0.5) + w() * 0.55;
+  const interval = Math.random() * (w() * OBSTACLE_FREQUENCY_MAX) + w() * OBSTACLE_FREQUENCY_MIN;
   setTimeout(() => {
     if (!gameover && isLandscape()) {
       obstacles.push({
@@ -245,6 +270,26 @@ function spawnObstacle() {
       spawnObstacle();
     }
   }, interval / speed * 13);
+}
+
+// Itens de poder (imã e escudo)
+function spawnPowerup() {
+  // Intervalo muito mais longo para os power-ups (bem mais raros)
+  const interval = Math.random() * (w() * POWERUP_FREQUENCY_MAX) + w() * POWERUP_FREQUENCY_MIN;
+  setTimeout(() => {
+    if (!gameover && isLandscape()) {
+      // Tipo aleatório: 0 para imã, 1 para escudo
+      const type = Math.floor(Math.random() * 2);
+      powerups.push({
+        x: w() + POWERUP_SIZE(),
+        y: GROUND_Y() - POWERUP_SIZE() - Math.random() * (h() * 0.15),
+        w: POWERUP_SIZE(),
+        h: POWERUP_SIZE(),
+        type: type // 0 = imã, 1 = escudo
+      });
+      spawnPowerup();
+    }
+  }, interval / speed * 50); // Multiplicador muito maior para tornar os power-ups bem mais raros
 }
 
 function drawBeach() {
@@ -270,6 +315,40 @@ function drawGirl() {
   ctx.translate(girl.x + girl.w/2, girl.y + girl.h/2);
   const jumpAmt = girl.jumping ? 0.12 : 0;
   ctx.rotate(jumpAmt * Math.sin(Date.now()/110));
+  
+  // Efeito de escudo quando ativo
+  if (shieldActive) {
+    ctx.beginPath();
+    ctx.arc(0, 0, girl.w * 1.2, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(147, 112, 219, 0.3)';
+    ctx.fill();
+    
+    // Borda animada do escudo
+    ctx.strokeStyle = 'rgba(255, 255, 255, ' + (0.5 + Math.sin(Date.now()/150) * 0.5) + ')';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+  
+  // Efeito de imã quando ativo
+  if (magnetActive) {
+    ctx.beginPath();
+    // Linhas onduladas ao redor da menina
+    for (let i = 0; i < 360; i += 40) {
+      const rad = i * Math.PI / 180;
+      const wave = Math.sin(Date.now()/200 + i/20) * 5;
+      const x1 = Math.cos(rad) * (girl.w * 1.3);
+      const y1 = Math.sin(rad) * (girl.w * 1.3);
+      const x2 = Math.cos(rad) * (girl.w * 1.6 + wave);
+      const y2 = Math.sin(rad) * (girl.w * 1.6 + wave);
+      
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+    }
+    ctx.strokeStyle = 'rgba(30, 144, 255, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  
   ctx.fillStyle = '#ffb6c1';
   ctx.fillRect(-girl.w/2, -girl.h/2, girl.w, girl.h);
   ctx.beginPath();
@@ -355,6 +434,142 @@ function drawObstacle(obs) {
   ctx.restore();
 }
 
+// Desenhar item de poder (imã ou escudo)
+function drawPowerup(powerup) {
+  ctx.save();
+  ctx.translate(powerup.x + powerup.w/2, powerup.y + powerup.h/2);
+  
+  // Efeito de rotação suave
+  ctx.rotate(Date.now() / 800);
+  
+  if (powerup.type === 0) { // Imã
+    // Desenha imã
+    ctx.fillStyle = '#1e90ff';
+    ctx.beginPath();
+    ctx.arc(0, 0, powerup.w/2.5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Ferradura do imã
+    ctx.fillStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.arc(0, -powerup.h/8, powerup.w/4, Math.PI, 0, true);
+    ctx.fill();
+    
+    // Polos do imã
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-powerup.w/4, -powerup.h/5, powerup.w/10, powerup.h/3.5);
+    ctx.fillRect(powerup.w/4 - powerup.w/10, -powerup.h/5, powerup.w/10, powerup.h/3.5);
+  } else { // Escudo
+    // Desenha escudo
+    ctx.fillStyle = '#9370db';
+    ctx.beginPath();
+    ctx.arc(0, 0, powerup.w/2.5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Desenho do escudo
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, powerup.w/4, 0, 2 * Math.PI);
+    ctx.stroke();
+    
+    // Detalhes do escudo
+    ctx.beginPath();
+    ctx.moveTo(0, -powerup.h/5);
+    ctx.lineTo(0, powerup.h/5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-powerup.w/5, 0);
+    ctx.lineTo(powerup.w/5, 0);
+    ctx.stroke();
+  }
+  
+  // Efeito brilhante
+  ctx.shadowColor = powerup.type === 0 ? "#1e90ff" : "#9370db";
+  ctx.shadowBlur = 10;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 0, powerup.w/2.5, 0, 2 * Math.PI);
+  ctx.stroke();
+  
+  ctx.restore();
+}
+
+// Desenha indicadores dos poderes ativos
+function drawPowerIndicators() {
+  // Posição dos indicadores no canto superior direito
+  const startX = w() - 20;
+  const startY = 20;
+  const iconSize = w() * 0.035;
+  const spacing = iconSize * 1.5;
+  
+  // Desenhar ícone do imã se estiver ativo
+  if (magnetActive) {
+    const timeLeft = (magnetEndTime - Date.now()) / 1000; // Tempo restante em segundos
+    drawPowerIcon(startX - iconSize, startY, iconSize, 0, timeLeft, MAGNET_DURATION/1000);
+  }
+  
+  // Desenhar ícone do escudo se estiver ativo
+  if (shieldActive) {
+    const timeLeft = (shieldEndTime - Date.now()) / 1000; // Tempo restante em segundos
+    drawPowerIcon(startX - iconSize, startY + spacing, iconSize, 1, timeLeft, SHIELD_DURATION/1000);
+  }
+}
+
+// Desenha um ícone de poder com barra de tempo
+function drawPowerIcon(x, y, size, type, timeLeft, maxTime) {
+  ctx.save();
+  ctx.translate(x, y);
+  
+  // Desenha o círculo de fundo
+  ctx.fillStyle = type === 0 ? 'rgba(30, 144, 255, 0.7)' : 'rgba(147, 112, 219, 0.7)';
+  ctx.beginPath();
+  ctx.arc(0, 0, size, 0, 2 * Math.PI);
+  ctx.fill();
+  
+  // Desenha o ícone
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  
+  if (type === 0) { // Imã
+    // Ferradura do imã
+    ctx.beginPath();
+    ctx.arc(0, -size/8, size/3, Math.PI, 0, true);
+    ctx.stroke();
+    
+    // Polos do imã
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-size/3, -size/4, size/6, size/2);
+    ctx.fillRect(size/3 - size/6, -size/4, size/6, size/2);
+  } else { // Escudo
+    ctx.beginPath();
+    ctx.arc(0, 0, size/2, 0, 2 * Math.PI);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(0, -size/2);
+    ctx.lineTo(0, size/2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(-size/2, 0);
+    ctx.lineTo(size/2, 0);
+    ctx.stroke();
+  }
+  
+  // Desenha barra de tempo
+  const percentage = timeLeft / maxTime;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.arc(0, 0, size * 0.8, -Math.PI/2, -Math.PI/2 + percentage * 2 * Math.PI, false);
+  ctx.closePath();
+  ctx.fill();
+  
+  ctx.restore();
+}
+
 function loop() {
   if (gameover || !isLandscape()) return;
   ctx.clearRect(0,0,w(),h());
@@ -363,6 +578,15 @@ function loop() {
   if(bgOffset < -w()) bgOffset += w();
 
   drawBeach();
+
+  // Verificar se os poderes estão ativos
+  const currentTime = Date.now();
+  if (magnetActive && currentTime > magnetEndTime) {
+    magnetActive = false;
+  }
+  if (shieldActive && currentTime > shieldEndTime) {
+    shieldActive = false;
+  }
 
   // Menina física
   girl.vy += GRAVITY();
@@ -387,14 +611,52 @@ function loop() {
   for (let i = 0; i < obstacles.length; i++) {
     let obs = obstacles[i];
     if (rectsCollide(girl, obs)) {
-      gameOver("Você tropeçou em uma pedra!");
-      return;
+      // Se o escudo estiver ativo, não há colisão com obstáculos
+      if (!shieldActive) {
+        gameOver("Você tropeçou em uma pedra!");
+        return;
+      }
+    }
+  }
+
+  // Power-ups
+  for (let p of powerups) p.x -= speed;
+  powerups = powerups.filter(p => p.x + p.w > 0);
+
+  // Colisão menina/power-up
+  for (let i = powerups.length-1; i >= 0; i--) {
+    let p = powerups[i];
+    if (rectsCollide(girl, p)) {
+      powerups.splice(i, 1);
+      
+      if (p.type === 0) { // Imã
+        magnetActive = true;
+        magnetEndTime = Date.now() + MAGNET_DURATION;
+      } else { // Escudo
+        shieldActive = true;
+        shieldEndTime = Date.now() + SHIELD_DURATION;
+      }
     }
   }
 
   // Shells
   for (let s of shells) s.x -= speed;
   shells = shells.filter(s => s.x + s.w > 0);
+
+  // Efeito do imã de conchas
+  if (magnetActive) {
+    for (let s of shells) {
+      // Calcular distância entre a menina e a concha
+      const dx = (girl.x + girl.w/2) - (s.x + s.w/2);
+      const dy = (girl.y + girl.h/2) - (s.y + s.h/2);
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      
+      // Se a concha estiver próxima, atraí-la para a menina
+      if (distance < w() * 0.3) // Distância de atração: 30% da largura da tela
+        s.x += dx * 0.07; // Velocidade de atração
+        s.y += dy * 0.07;
+    }
+  }
 
   // Colisão menina/shell
   for (let i = shells.length-1; i >= 0; i--) {
@@ -410,8 +672,11 @@ function loop() {
 
   // Colisão jacaré/menina
   if (rectsCollide(jacare, girl)) {
-    gameOver("O jacaré pegou você!");
-    return;
+    // Se o escudo estiver ativo, não há colisão com o jacaré
+    if (!shieldActive) {
+      gameOver("O jacaré pegou você!");
+      return;
+    }
   }
 
   // Desenha shells
@@ -419,10 +684,16 @@ function loop() {
 
   // Desenha obstáculos
   for (let o of obstacles) drawObstacle(o);
+  
+  // Desenha power-ups
+  for (let p of powerups) drawPowerup(p);
 
   // Desenha personagens
   drawGirl();
   drawJacare();
+  
+  // Desenha indicadores dos poderes ativos
+  drawPowerIndicators();
 
   requestAnimationFrame(loop);
 }
