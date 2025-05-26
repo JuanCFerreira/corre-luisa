@@ -290,6 +290,12 @@ let currentSpriteIndex = 0;
 let lastSpriteUpdateTime = 0;
 let SPRITE_UPDATE_INTERVAL = 100; // Atualizar sprites a cada 100ms
 
+// Sprites para animação do jacaré
+let jacareSprites = [];
+let currentJacareSpriteIndex = 0;
+let lastJacareSpriteUpdateTime = 0;
+let JACARE_SPRITE_UPDATE_INTERVAL = 130; // Atualizar sprites do jacaré a cada 130ms
+
 // Adicionar um array de estrelas fixas (para melhor desempenho)
 let stars = [];
 
@@ -321,6 +327,29 @@ function loadLuisaSprites() {
     };
     img.onerror = function() {
       console.error(`Failed to load sprite ${index}`);
+      loadSprite(index + 1);
+    };
+  }
+  
+  loadSprite(1);
+}
+
+// Carregar sprites do jacaré
+function loadJacareSprites() {
+  jacareSprites = [];
+  const totalSprites = 8;
+  
+  function loadSprite(index) {
+    if (index > totalSprites) return;
+    
+    const img = new Image();
+    img.src = `sprites/aligator-runn/${index}.png`;
+    img.onload = function() {
+      jacareSprites[index-1] = img;
+      loadSprite(index + 1);
+    };
+    img.onerror = function() {
+      console.error(`Failed to load jacare sprite ${index}`);
       loadSprite(index + 1);
     };
   }
@@ -435,9 +464,14 @@ function startGame() {
   // Carregar os sprites da Luisa
   loadLuisaSprites();
   
+  // Carregar os sprites do Jacaré
+  loadJacareSprites();
+  
   // Reiniciar a animação
   currentSpriteIndex = 0;
+  currentJacareSpriteIndex = 0;
   lastSpriteUpdateTime = Date.now();
+  lastJacareSpriteUpdateTime = Date.now();
   
   spawnShell();
   spawnObstacle();
@@ -678,28 +712,56 @@ function drawGirl() {
 function drawJacare() {
   ctx.save();
   ctx.translate(jacare.x + jacare.w/2, jacare.y + jacare.h/2);
-  ctx.fillStyle = '#228B22';
-  ctx.fillRect(-jacare.w/2, -jacare.h/2, jacare.w, jacare.h*0.55);
-  ctx.beginPath();
-  ctx.ellipse(jacare.w*0.37, -jacare.h*0.1, jacare.w*0.23, jacare.h*0.25, 0, 0, 2*Math.PI);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(-jacare.w/2, jacare.h*0.05);
-  ctx.quadraticCurveTo(-jacare.w*0.75, jacare.h*0.07, -jacare.w/2, jacare.h*0.30);
-  ctx.lineTo(-jacare.w/2+10, jacare.h*0.10);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(jacare.w*0.47, -jacare.h*0.18, jacare.w*0.06, 0, 2*Math.PI);
-  ctx.fillStyle = '#fff';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(jacare.w*0.50, -jacare.h*0.18, jacare.w*0.025, 0, 2*Math.PI);
-  ctx.fillStyle = '#111';
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(jacare.w*0.55, -jacare.h*0.03, 6, 7);
-  ctx.fillRect(jacare.w*0.52, 0, 6, 7);
+  
+  // Atualizar a animação do sprite do jacaré
+  const currentTime = Date.now();
+  if (currentTime - lastJacareSpriteUpdateTime > JACARE_SPRITE_UPDATE_INTERVAL) {
+    currentJacareSpriteIndex = (currentJacareSpriteIndex + 1) % jacareSprites.length;
+    lastJacareSpriteUpdateTime = currentTime;
+  }
+  
+  // Desenhar sprite do jacaré se estiver carregado
+  if (jacareSprites.length > 0 && jacareSprites[currentJacareSpriteIndex]) {
+    const sprite = jacareSprites[currentJacareSpriteIndex];
+    // Ajustar o tamanho para manter a proporção da imagem
+    const spriteRatio = sprite.height / sprite.width;
+    const drawWidth = jacare.w * 1.5; // Um pouco maior que o retângulo original
+    const drawHeight = drawWidth * spriteRatio;
+    
+    // Centralizar a imagem (considerando o ponto de origem no centro)
+    ctx.drawImage(
+      sprite, 
+      -drawWidth/2, 
+      -drawHeight/2, 
+      drawWidth, 
+      drawHeight
+    );
+  } else {
+    // Fallback para o desenho original se os sprites não estiverem carregados
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(-jacare.w/2, -jacare.h/2, jacare.w, jacare.h*0.55);
+    ctx.beginPath();
+    ctx.ellipse(jacare.w*0.37, -jacare.h*0.1, jacare.w*0.23, jacare.h*0.25, 0, 0, 2*Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-jacare.w/2, jacare.h*0.05);
+    ctx.quadraticCurveTo(-jacare.w*0.75, jacare.h*0.07, -jacare.w/2, jacare.h*0.30);
+    ctx.lineTo(-jacare.w/2+10, jacare.h*0.10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(jacare.w*0.47, -jacare.h*0.18, jacare.w*0.06, 0, 2*Math.PI);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(jacare.w*0.50, -jacare.h*0.18, jacare.w*0.025, 0, 2*Math.PI);
+    ctx.fillStyle = '#111';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(jacare.w*0.55, -jacare.h*0.03, 6, 7);
+    ctx.fillRect(jacare.w*0.52, 0, 6, 7);
+  }
+  
   ctx.restore();
 }
 
@@ -913,6 +975,10 @@ function loop() {
   SPRITE_UPDATE_INTERVAL = 180 - (speed * 10); // Mínimo de 80ms em velocidade máxima
   if (SPRITE_UPDATE_INTERVAL < 80) SPRITE_UPDATE_INTERVAL = 80;
   
+  // Ajustar também a velocidade da animação do jacaré
+  JACARE_SPRITE_UPDATE_INTERVAL = 210 - (speed * 10); // Um pouco mais lenta que a da Luisa
+  if (JACARE_SPRITE_UPDATE_INTERVAL < 100) JACARE_SPRITE_UPDATE_INTERVAL = 100;
+  
   // Jacaré persegue a menina, mas fica mais afastado
   let dist = girl.x - jacare.x - jacare.w * 0.2;
   let minDist = girl.w * 2.5; // Aumentando a distância mínima para 2.5x a largura da menina
@@ -1005,10 +1071,6 @@ function loop() {
         flashElement.style.position = 'absolute';
         flashElement.style.left = '0';
         flashElement.style.top = '0';
-        flashElement.style.width = '100%';
-        flashElement.style.height = '100%';
-        flashElement.style.backgroundColor = isNightMode ? 'black' : 'white';
-        flashElement.style.opacity = '0.8';
         flashElement.style.zIndex = '5';
         flashElement.style.transition = 'opacity 1.5s';
         document.getElementById('game-area').appendChild(flashElement);        // Remover o flash após a animação
