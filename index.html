@@ -192,6 +192,9 @@ const OBSTACLE_FREQUENCY_MAX = 0.5;  // Máximo intervalo para obstáculos
 const POWERUP_FREQUENCY_MIN = 4.0;   // Mínimo intervalo para power-ups (muito mais raro)
 const POWERUP_FREQUENCY_MAX = 6.0;   // Máximo intervalo para power-ups
 
+// Velocidade máxima do jogo (relativa à largura da tela)
+const MAX_SPEED = 10;  // Velocidade máxima (dobro da velocidade inicial)
+
 // Duração dos power-ups em milissegundos
 const MAGNET_DURATION = 8000;  // Duração do imã: 8 segundos
 const SHIELD_DURATION = 6000;  // Duração do escudo: 6 segundos
@@ -219,14 +222,13 @@ function startGame() {
     w: GIRL_W(),
     h: GIRL_H(),
     jumping: false
-  };
-  shells = [];
+  };  shells = [];
   obstacles = [];
   powerups = []; // Reiniciar array de itens de poder
   magnetActive = false; // Desativar imã
   shieldActive = false; // Desativar escudo
   score = 0;
-  speed = w() * 0.009;
+  speed = w() * 0.009; // Velocidade inicial (metade da velocidade máxima)
   bgOffset = 0;
   started = false;
   gameover = false;
@@ -680,7 +682,6 @@ function loop() {
         s.y += dy * 0.07;
     }
   }
-
   // Colisão menina/shell
   for (let i = shells.length-1; i >= 0; i--) {
     let s = shells[i];
@@ -688,7 +689,15 @@ function loop() {
       shells.splice(i,1);
       score++;
       document.getElementById('score').innerText = "Conchas: " + score;
-      speed += w() * 0.00037;
+      
+      // Aumentar velocidade até o limite máximo
+      if (speed < MAX_SPEED) {
+        speed += w() * 0.00037;
+        // Limitar a velocidade ao máximo definido
+        if (speed > MAX_SPEED) {
+          speed = MAX_SPEED;
+        }
+      }
       // Jacaré não fica mais rápido!
     }
   }
