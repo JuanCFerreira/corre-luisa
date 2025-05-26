@@ -18,9 +18,11 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-    }
-    body.fullscreen {
+    }    body.fullscreen {
       background: #87ceeb;
+    }
+    body.fullscreen.night-mode {
+      background: #1a1a3a;
     }
     #phone-container {
       width: 800px;
@@ -38,20 +40,22 @@
       border-radius: 0;
       border: none;
       box-shadow: none;
-    }
-    #game-area {
+    }    #game-area {
       width: 100%;
       height: 100%;
       position: relative;
       background: #87ceeb;
       overflow: hidden;
+      transition: background-color 1s;
+    }
+    .night-mode #game-area {
+      background: #1a1a3a;
     }
     canvas { 
       width: 100%; 
       height: 100%; 
       display: block;
-    }
-    #score {
+    }    #score {
       position: absolute;
       left: 18px;
       top: 18px;
@@ -60,6 +64,19 @@
       color: #fff;
       text-shadow: 1px 2px 4px #333, 0 0 10px #1e90ff;
       z-index: 2;
+    }    #day-night-indicator {
+      position: absolute;
+      left: 18px;
+      top: 60px;
+      font-family: Arial, sans-serif;
+      font-size: 1.2em;
+      color: #fff;
+      text-shadow: 1px 2px 4px #333, 0 0 10px #1e90ff;
+      z-index: 2;
+      padding: 5px 10px;
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      transition: text-shadow 0.3s, transform 0.3s;
     }
     #gameover {
       position: absolute;
@@ -124,8 +141,7 @@
     .fullscreen #fullscreen-btn:before {
       width: 16px;
       height: 16px;
-    }
-    @media (max-width: 800px) {
+    }    @media (max-width: 800px) {
       #phone-container {
         width: 100%;
         height: 100%;
@@ -133,13 +149,19 @@
         border: none;
       }
     }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body>
-<div id="phone-container">
-  <div id="game-area">
+<div id="phone-container">  <div id="game-area">
     <div id="rotate">Por favor, gire o celular para a horizontal (paisagem) para jogar!</div>
     <div id="score">Conchas: 0</div>
+    <div id="day-night-indicator"></div>
     <button id="fullscreen-btn" aria-label="Tela cheia"></button>
     <div id="gameover">
       <div id="finalmsg"></div>
@@ -206,6 +228,23 @@ let magnetEndTime = 0; // Tempo de término do poder imã
 let shieldActive = false; // Estado do poder escudo
 let shieldEndTime = 0; // Tempo de término do poder escudo
 let lastObstacleX = 0; // Rastrear a posição do último obstáculo
+let isNightMode = false; // Controla se o cenário está em modo noturno
+
+// Adicionar um array de estrelas fixas (para melhor desempenho)
+let stars = [];
+
+// Inicializar estrelas fixas
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 100; i++) {
+    stars.push({
+      x: Math.random() * w(),
+      y: Math.random() * GROUND_Y() * 0.8,
+      size: Math.random() * 2 + 1,
+      blinkSpeed: Math.random() * 0.01 + 0.005
+    });
+  }
+}
 
 function startGame() {
   setCanvasSize();  jacare = {
@@ -229,16 +268,21 @@ function startGame() {
   shieldActive = false; // Desativar escudo
   score = 0;
   speed = w() * 0.009; // Velocidade inicial (metade da velocidade máxima)
-  bgOffset = 0;
-  started = false;
+  bgOffset = 0;  started = false;
   gameover = false;
   // Reiniciar tempos dos poderes
   magnetEndTime = 0;
   shieldEndTime = 0;
-  lastObstacleX = 0; // Reiniciar a posição do último obstáculo
-  document.getElementById('score').innerText = "Conchas: 0";
-  document.getElementById('gameover').style.display = 'none';
-  spawnShell();
+  lastObstacleX = 0; // Reiniciar a posição do último obstáculo  isNightMode = false; // Iniciar com cenário diurno
+  document.body.classList.remove('night-mode'); // Remover classe de modo noturno
+  document.getElementById('score').innerText = "Conchas: 0";  document.getElementById('gameover').style.display = 'none';
+  
+  // Inicializar o indicador dia/noite
+  updateDayNightIndicator();
+  
+  // Inicializar estrelas fixas
+  initStars();
+    spawnShell();
   spawnObstacle();
   spawnPowerup(); // Iniciar geração de itens de poder
   requestAnimationFrame(loop);
@@ -311,20 +355,101 @@ function spawnPowerup() {
 }
 
 function drawBeach() {
-  ctx.fillStyle = '#87ceeb'; // Céu
+  // Cores para o modo dia
+  let skyColor = isNightMode ? '#1a1a3a' : '#87ceeb'; // Azul escuro à noite, azul claro de dia
+  let seaColor = isNightMode ? '#0a3a70' : '#1e90ff'; // Azul marinho à noite, azul normal de dia
+  let sandColor = isNightMode ? '#d4af37' : '#ffdb58'; // Areia mais escura à noite
+  let lineColor = isNightMode ? '#bb9930' : '#edd382'; // Linhas mais escuras à noite
+  
+  // Desenhar céu
+  ctx.fillStyle = skyColor;
   ctx.fillRect(0, 0, w(), h());
-  ctx.fillStyle = '#1e90ff'; // Mar
+  
+  // Desenhar mar
+  ctx.fillStyle = seaColor;
   ctx.fillRect(0, GROUND_Y() - h()*0.06, w(), h()*0.13);
-  ctx.fillStyle = '#ffdb58'; // Areia
+  
+  // Desenhar areia
+  ctx.fillStyle = sandColor;
   ctx.fillRect(0, GROUND_Y(), w(), h() - GROUND_Y());
-  ctx.strokeStyle = '#edd382'; // Linhas areia
+  
+  // Desenhar linhas na areia
+  ctx.strokeStyle = lineColor;
   ctx.lineWidth = 4;
+  
   for(let i=0; i<9; i++) {
     let lx = ((bgOffset + i*200) % w());
     ctx.beginPath();
     ctx.moveTo(lx, GROUND_Y() + h()*0.03);
     ctx.lineTo(lx + 70, h());
     ctx.stroke();
+  }
+    // Adicionar elementos noturnos ou diurnos
+  if (isNightMode) {
+    // Adicionar estrelas à noite usando o array de estrelas fixas
+    for(let i=0; i < stars.length; i++) {
+      let star = stars[i];
+      let opacity = 0.5 + Math.sin(Date.now() * star.blinkSpeed) * 0.5; // Efeito de brilho
+      
+      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI*2);
+      ctx.fill();
+      
+      // Adicionar brilho nas estrelas maiores
+      if (star.size > 2) {
+        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(star.x - star.size*2, star.y);
+        ctx.lineTo(star.x + star.size*2, star.y);
+        ctx.moveTo(star.x, star.y - star.size*2);
+        ctx.lineTo(star.x, star.y + star.size*2);
+        ctx.stroke();
+      }
+    }
+      // Adicionar lua
+    ctx.fillStyle = '#f5f5f5';
+    ctx.beginPath();
+    ctx.arc(w() * 0.85, h() * 0.2, w() * 0.06, 0, Math.PI*2);
+    ctx.fill();
+    
+    // Sombra na lua
+    ctx.fillStyle = '#1a1a3a';
+    ctx.beginPath();
+    ctx.arc(w() * 0.83, h() * 0.18, w() * 0.05, 0, Math.PI*2);
+    ctx.fill();
+    
+    // Adicionar um brilho ao redor da lua
+    const luaGradient = ctx.createRadialGradient(
+      w() * 0.85, h() * 0.2, w() * 0.06,
+      w() * 0.85, h() * 0.2, w() * 0.15
+    );
+    luaGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+    luaGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    
+    ctx.fillStyle = luaGradient;
+    ctx.beginPath();
+    ctx.arc(w() * 0.85, h() * 0.2, w() * 0.15, 0, Math.PI*2);
+    ctx.fill();
+  } else {
+    // Adicionar sol
+    let sunGradient = ctx.createRadialGradient(
+      w() * 0.85, h() * 0.2, 0,
+      w() * 0.85, h() * 0.2, w() * 0.08
+    );
+    sunGradient.addColorStop(0, '#ffff00');
+    sunGradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
+    
+    ctx.fillStyle = sunGradient;
+    ctx.beginPath();
+    ctx.arc(w() * 0.85, h() * 0.2, w() * 0.08, 0, Math.PI*2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#ffff00';
+    ctx.beginPath();
+    ctx.arc(w() * 0.85, h() * 0.2, w() * 0.05, 0, Math.PI*2);
+    ctx.fill();
   }
 }
 
@@ -367,29 +492,60 @@ function drawGirl() {
     ctx.stroke();
   }
   
-  ctx.fillStyle = '#ffb6c1';
+  // Cor da menina - mais escura à noite para representar sombras
+  const girlBodyColor = isNightMode ? '#e5a4b4' : '#ffb6c1';
+  const girlFaceColor = isNightMode ? '#ffd5d5' : '#ffe4e1';
+  const hairColor = isNightMode ? '#6b4c21' : '#8b5c2d';
+  
+  // Desenhar corpo
+  ctx.fillStyle = girlBodyColor;
   ctx.fillRect(-girl.w/2, -girl.h/2, girl.w, girl.h);
+  
+  // Desenhar rosto
   ctx.beginPath();
   ctx.arc(0, -girl.h/2.2, girl.w/2.7, 0, 2 * Math.PI);
-  ctx.fillStyle = '#ffe4e1';
+  ctx.fillStyle = girlFaceColor;
   ctx.fill();
+  
+  // Desenhar sapatos
   ctx.fillStyle = '#c66900';
   ctx.fillRect(-girl.w/2, girl.h/2 - 8, girl.w*0.20, 10);
   ctx.fillRect(girl.w/2 - girl.w*0.20, girl.h/2 - 8, girl.w*0.20, 10);
+  
+  // Desenhar cabelo
   ctx.beginPath();
   ctx.moveTo(-girl.w/2.5, -girl.h/2.2);
   ctx.lineTo(-girl.w/1.8, -girl.h/1.8);
   ctx.lineTo(-girl.w/4, -girl.h/2.8);
   ctx.closePath();
-  ctx.fillStyle = '#8b5c2d';
+  ctx.fillStyle = hairColor;
   ctx.fill();
+  
+  // Adicionar detalhes para o modo noturno
+  if (isNightMode) {
+    // Adicionar sombra noturna
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillRect(-girl.w/2, -girl.h/4, girl.w, girl.h/4);
+    
+    // Adicionar olhos brilhantes no escuro
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(-girl.w/5, -girl.h/2, girl.w/12, 0, Math.PI*2);
+    ctx.arc(girl.w/5, -girl.h/2, girl.w/12, 0, Math.PI*2);
+    ctx.fill();
+  }
+  
   ctx.restore();
 }
 
 function drawJacare() {
   ctx.save();
   ctx.translate(jacare.x + jacare.w/2, jacare.y + jacare.h/2);
-  ctx.fillStyle = '#228B22';
+  
+  // Cor do jacaré - mais escuro à noite
+  const jacareColor = isNightMode ? '#0e6b0e' : '#228B22';
+  
+  ctx.fillStyle = jacareColor;
   ctx.fillRect(-jacare.w/2, -jacare.h/2, jacare.w, jacare.h*0.55);
   ctx.beginPath();
   ctx.ellipse(jacare.w*0.37, -jacare.h*0.1, jacare.w*0.23, jacare.h*0.25, 0, 0, 2*Math.PI);
@@ -400,14 +556,28 @@ function drawJacare() {
   ctx.lineTo(-jacare.w/2+10, jacare.h*0.10);
   ctx.closePath();
   ctx.fill();
+  
+  // Olhos - brilham mais à noite
   ctx.beginPath();
   ctx.arc(jacare.w*0.47, -jacare.h*0.18, jacare.w*0.06, 0, 2*Math.PI);
   ctx.fillStyle = '#fff';
   ctx.fill();
+  
+  // Pupila - mais dilatada à noite
+  const pupilSize = isNightMode ? jacare.w*0.035 : jacare.w*0.025;
   ctx.beginPath();
-  ctx.arc(jacare.w*0.50, -jacare.h*0.18, jacare.w*0.025, 0, 2*Math.PI);
+  ctx.arc(jacare.w*0.50, -jacare.h*0.18, pupilSize, 0, 2*Math.PI);
   ctx.fillStyle = '#111';
   ctx.fill();
+  
+  // Reflexo do olho no modo noturno
+  if (isNightMode) {
+    ctx.beginPath();
+    ctx.arc(jacare.w*0.48, -jacare.h*0.19, jacare.w*0.01, 0, 2*Math.PI);
+    ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
+    ctx.fill();
+  }
+  
   ctx.fillStyle = '#fff';
   ctx.fillRect(jacare.w*0.55, -jacare.h*0.03, 6, 7);
   ctx.fillRect(jacare.w*0.52, 0, 6, 7);
@@ -417,14 +587,26 @@ function drawJacare() {
 function drawShell(shell) {
   ctx.save();
   ctx.translate(shell.x + shell.w/2, shell.y + shell.h/2);
+  
+  // Cor da concha - mais escura e brilhante à noite
+  const shellColor = isNightMode ? '#e09932' : '#ffb347';
+  
   ctx.beginPath();
   ctx.arc(0, 0, shell.w/2.3, 0, Math.PI, true);
   ctx.lineTo(-shell.w/2.3, shell.h/2.7);
   ctx.quadraticCurveTo(0, shell.h/1.7, shell.w/2.3, shell.h/2.7);
   ctx.closePath();
-  ctx.fillStyle = '#ffb347';
+  ctx.fillStyle = shellColor;
   ctx.fill();
-  ctx.strokeStyle = '#fff';
+  
+  // Adicionar brilho à noite
+  if (isNightMode) {
+    ctx.shadowColor = "#ffcc00";
+    ctx.shadowBlur = 8;
+  }
+  
+  // Linhas da concha
+  ctx.strokeStyle = isNightMode ? 'rgba(255, 255, 255, 0.7)' : '#fff';
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(0, shell.h/2.7);
@@ -443,12 +625,37 @@ function drawShell(shell) {
 function drawObstacle(obs) {
   ctx.save();
   ctx.translate(obs.x + obs.w/2, obs.y + obs.h/2);
+  
+  // Cor e efeitos do obstáculo conforme o modo dia/noite
+  const obsColor = isNightMode ? '#555' : '#888';
+  const shadowColor = isNightMode ? "#111" : "#222";
+  const shadowBlur = isNightMode ? 8 : 4;
+  
   ctx.beginPath();
   ctx.ellipse(0, obs.h/5, obs.w/2, obs.h/2.2, 0, 0, 2 * Math.PI);
-  ctx.fillStyle = '#888';
-  ctx.shadowColor = "#222";
-  ctx.shadowBlur = 4;
+  ctx.fillStyle = obsColor;
+  ctx.shadowColor = shadowColor;
+  ctx.shadowBlur = shadowBlur;
   ctx.fill();
+  
+  // Adicionar detalhes nas pedras à noite
+  if (isNightMode) {
+    // Adicionar musgo ou brilho nas pedras
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * obs.w/4;
+      const x = Math.cos(angle) * dist;
+      const y = Math.sin(angle) * dist + obs.h/5;
+      const size = Math.random() * obs.w/10 + obs.w/20;
+      
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(40, 180, 40, 0.3)';
+      ctx.fill();
+    }
+  }
+  
   ctx.restore();
 }
 
@@ -681,14 +888,48 @@ function loop() {
         s.x += dx * 0.07; // Velocidade de atração
         s.y += dy * 0.07;
     }
-  }
-  // Colisão menina/shell
+  }  // Colisão menina/shell
   for (let i = shells.length-1; i >= 0; i--) {
     let s = shells[i];
     if (rectsCollide(girl,s)) {
       shells.splice(i,1);
       score++;
       document.getElementById('score').innerText = "Conchas: " + score;
+        // Alternar entre dia e noite a cada 50 conchas
+      if (score % 50 === 0) {
+        isNightMode = !isNightMode;
+        
+        // Atualizar classe do body para mudar o fundo em tela cheia
+        if (isNightMode) {
+          document.body.classList.add('night-mode');
+          // Inicializar estrelas quando mudar para modo noturno
+          initStars();
+        } else {
+          document.body.classList.remove('night-mode');
+        }
+        
+        // Efeito visual para transição
+        const flashElement = document.createElement('div');
+        flashElement.style.position = 'absolute';
+        flashElement.style.left = '0';
+        flashElement.style.top = '0';
+        flashElement.style.width = '100%';
+        flashElement.style.height = '100%';
+        flashElement.style.backgroundColor = isNightMode ? 'black' : 'white';
+        flashElement.style.opacity = '0.8';
+        flashElement.style.zIndex = '5';
+        flashElement.style.transition = 'opacity 1.5s';
+        document.getElementById('game-area').appendChild(flashElement);        // Remover o flash após a animação
+        setTimeout(() => {
+          flashElement.style.opacity = '0';
+          setTimeout(() => {
+            document.getElementById('game-area').removeChild(flashElement);
+          }, 1500);
+        }, 100);
+        
+        // Atualizar o indicador dia/noite após a mudança
+        updateDayNightIndicator();
+      }
       
       // Aumentar velocidade até o limite máximo
       if (speed < MAX_SPEED) {
@@ -723,9 +964,11 @@ function loop() {
   // Desenha personagens
   drawGirl();
   drawJacare();
-  
-  // Desenha indicadores dos poderes ativos
+    // Desenha indicadores dos poderes ativos
   drawPowerIndicators();
+  
+  // Atualizar o indicador dia/noite
+  updateDayNightIndicator();
 
   requestAnimationFrame(loop);
 }
@@ -851,14 +1094,23 @@ document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
 document.addEventListener('mozfullscreenchange', handleFullScreenChange);
 document.addEventListener('MSFullscreenChange', handleFullScreenChange);
 
-function handleFullScreenChange() {
-  if (document.fullscreenElement || 
+function handleFullScreenChange() {  if (document.fullscreenElement || 
       document.webkitFullscreenElement || 
       document.mozFullScreenElement ||
       document.msFullscreenElement) {
     document.body.classList.add('fullscreen');
+    // Manter a classe night-mode se estiver em modo noturno
+    if (isNightMode) {
+      document.body.classList.add('night-mode');
+    }
   } else {
     document.body.classList.remove('fullscreen');
+    // Manter a classe night-mode se estiver em modo noturno
+    if (isNightMode) {
+      document.body.classList.add('night-mode');
+    } else {
+      document.body.classList.remove('night-mode');
+    }
   }
   
   // Atualizar tamanho do canvas após tela cheia
@@ -882,6 +1134,38 @@ function checkMobileFullscreen() {
 // Início
 checkOrientation();
 checkMobileFullscreen();
+
+// Função para atualizar o indicador dia/noite
+function updateDayNightIndicator() {
+  const indicator = document.getElementById('day-night-indicator');
+  const nextCycle = 50 - (score % 50); // Calcular quantas conchas faltam para o próximo ciclo
+  
+  // Definir ícone e texto apropriados para o modo atual
+  let icon = isNightMode ? '🌙' : '☀️';
+  let nextIcon = isNightMode ? '☀️' : '🌙';
+  let text = isNightMode ? 'Noite' : 'Dia';
+  
+  // Atualizar o indicador
+  indicator.innerHTML = `${icon} ${text} (${nextIcon} em ${nextCycle} conchas)`;
+  
+  // Adicionar efeito pulsante quando estiver próximo da mudança
+  if (nextCycle <= 5) {
+    indicator.style.animation = 'pulse 0.8s infinite';
+    indicator.style.textShadow = isNightMode ? 
+      '0 0 10px rgba(255, 255, 0, 0.8)' : 
+      '0 0 10px rgba(147, 112, 219, 0.8)';
+  } else {
+    indicator.style.animation = 'none';
+    indicator.style.textShadow = '1px 2px 4px #333, 0 0 10px #1e90ff';
+  }
+}
+
+// Atualize as estrelas quando a tela for redimensionada
+window.addEventListener('resize', function() {
+  if (isNightMode) {
+    initStars();
+  }
+});
 </script>
 </body>
 </html>
