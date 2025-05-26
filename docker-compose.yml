@@ -9,4 +9,5 @@ services:
       - "8080:8080"
     volumes:
       - ./index.html:/usr/share/nginx/html/index.html
+      - ./sprites:/usr/share/nginx/html/sprites
     restart: unless-stopped
