@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Endless Runner - Menina na Praia</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #444;
+      touch-action: none;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #phone-container {
+      width: 800px;
+      height: 450px;
+      background: #000;
+      border-radius: 20px;
+      border: 12px solid #333;
+      position: relative;
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+    #game-area {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #87ceeb;
+      overflow: hidden;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100%; 
+      display: block;
+    }
+    #score {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      font-family: Arial, sans-serif;
+      font-size: 1.8em;
+      color: #fff;
+      text-shadow: 1px 2px 4px #333, 0 0 10px #1e90ff;
+      z-index: 2;
+    }
+    #gameover {
+      position: absolute;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 2em;
+      text-align: center;
+      z-index: 3;
+      display: none;
+    }    #gameover button {
+      margin-top: 20px;
+      font-size: 0.9em;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      background: #ffdb58;
+      color: #444;
+      font-weight: bold;
+      box-shadow: 2px 2px 8px #222;
+      cursor: pointer;
+    }
+    #rotate {
+      display: none;
+      position: absolute;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: #222;
+      color: #fff;
+      z-index: 5;
+      font-family: Arial, sans-serif;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 1.5em;
+    }
+  </style>
+</head>
+<body>
+<div id="phone-container">
+  <div id="game-area">
+    <div id="rotate">Por favor, gire o celular para a horizontal (paisagem) para jogar!</div>
+    <div id="score">Conchas: 0</div>
+    <div id="gameover">
+      <div id="finalmsg"></div>
+      <button onclick="restart()">Jogar novamente</button>
+    </div>
+    <canvas id="game"></canvas>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+function isLandscape() { return true; } // Sempre em paisagem na simulação de celular
+function setCanvasSize() {
+  // Dimensões fixas para simular um dispositivo móvel
+  canvas.width = 800;
+  canvas.height = 450;
+}
+setCanvasSize();
+window.addEventListener('resize', setCanvasSize);
+
+let w = () => canvas.width, h = () => canvas.height;
+let GROUND_Y = () => h() * 0.82;
+let GRAVITY = () => h() * 0.0026;
+let JUMP_VELOCITY = () => -h() * 0.042; // Mais alto
+let GIRL_W = () => w() * 0.08, GIRL_H = () => h() * 0.32;
+let JACARE_W = () => w() * 0.13, JACARE_H = () => h() * 0.23;
+let SHELL_SIZE = () => w() * 0.045;
+let OBSTACLE_W = () => w() * 0.045, OBSTACLE_H = () => h() * 0.10;
+
+let girl, jacare, shells, obstacles, score, gameover, bgOffset, speed, touchActive, started;
+
+function startGame() {
+  setCanvasSize();
+  jacare = {
+    x: w() * 0.06,
+    y: GROUND_Y() - JACARE_H() + 12,
+    w: JACARE_W(),
+    h: JACARE_H()
+    // Removido jacare.speed, não é mais usado
+  };
+  girl = {
+    x: jacare.x + jacare.w + w() * 0.20,
+    y: GROUND_Y() - GIRL_H(),
+    vy: 0,
+    w: GIRL_W(),
+    h: GIRL_H(),
+    jumping: false
+  };
+  shells = [];
+  obstacles = [];
+  score = 0;
+  speed = w() * 0.009;
+  bgOffset = 0;
+  started = false;
+  gameover = false;
+  document.getElementById('score').innerText = "Conchas: 0";
+  document.getElementById('gameover').style.display = 'none';
+  spawnShell();
+  spawnObstacle();
+  requestAnimationFrame(loop);
+}
+
+// Shells (conchas)
+function spawnShell() {
+  const interval = Math.random() * (w() * 0.6) + w() * 0.45;
+  setTimeout(() => {
+    if (!gameover && isLandscape()) {
+      shells.push({
+        x: w() + SHELL_SIZE(),
+        y: GROUND_Y() - SHELL_SIZE() - Math.random() * (h() * 0.15),
+        w: SHELL_SIZE(),
+        h: SHELL_SIZE()
+      });
+      spawnShell();
+    }
+  }, interval / speed * 16);
+}
+
+// Obstáculos (pedras)
+function spawnObstacle() {
+  const interval = Math.random() * (w() * 0.5) + w() * 0.55;
+  setTimeout(() => {
+    if (!gameover && isLandscape()) {
+      obstacles.push({
+        x: w() + OBSTACLE_W(),
+        y: GROUND_Y() - OBSTACLE_H() + 8,
+        w: OBSTACLE_W(),
+        h: OBSTACLE_H()
+      });
+      spawnObstacle();
+    }
+  }, interval / speed * 13);
+}
+
+function drawBeach() {
+  ctx.fillStyle = '#87ceeb'; // Céu
+  ctx.fillRect(0, 0, w(), h());
+  ctx.fillStyle = '#1e90ff'; // Mar
+  ctx.fillRect(0, GROUND_Y() - h()*0.06, w(), h()*0.13);
+  ctx.fillStyle = '#ffdb58'; // Areia
+  ctx.fillRect(0, GROUND_Y(), w(), h() - GROUND_Y());
+  ctx.strokeStyle = '#edd382'; // Linhas areia
+  ctx.lineWidth = 4;
+  for(let i=0; i<9; i++) {
+    let lx = ((bgOffset + i*200) % w());
+    ctx.beginPath();
+    ctx.moveTo(lx, GROUND_Y() + h()*0.03);
+    ctx.lineTo(lx + 70, h());
+    ctx.stroke();
+  }
+}
+
+function drawGirl() {
+  ctx.save();
+  ctx.translate(girl.x + girl.w/2, girl.y + girl.h/2);
+  const jumpAmt = girl.jumping ? 0.12 : 0;
+  ctx.rotate(jumpAmt * Math.sin(Date.now()/110));
+  ctx.fillStyle = '#ffb6c1';
+  ctx.fillRect(-girl.w/2, -girl.h/2, girl.w, girl.h);
+  ctx.beginPath();
+  ctx.arc(0, -girl.h/2.2, girl.w/2.7, 0, 2 * Math.PI);
+  ctx.fillStyle = '#ffe4e1';
+  ctx.fill();
+  ctx.fillStyle = '#c66900';
+  ctx.fillRect(-girl.w/2, girl.h/2 - 8, girl.w*0.20, 10);
+  ctx.fillRect(girl.w/2 - girl.w*0.20, girl.h/2 - 8, girl.w*0.20, 10);
+  ctx.beginPath();
+  ctx.moveTo(-girl.w/2.5, -girl.h/2.2);
+  ctx.lineTo(-girl.w/1.8, -girl.h/1.8);
+  ctx.lineTo(-girl.w/4, -girl.h/2.8);
+  ctx.closePath();
+  ctx.fillStyle = '#8b5c2d';
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawJacare() {
+  ctx.save();
+  ctx.translate(jacare.x + jacare.w/2, jacare.y + jacare.h/2);
+  ctx.fillStyle = '#228B22';
+  ctx.fillRect(-jacare.w/2, -jacare.h/2, jacare.w, jacare.h*0.55);
+  ctx.beginPath();
+  ctx.ellipse(jacare.w*0.37, -jacare.h*0.1, jacare.w*0.23, jacare.h*0.25, 0, 0, 2*Math.PI);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-jacare.w/2, jacare.h*0.05);
+  ctx.quadraticCurveTo(-jacare.w*0.75, jacare.h*0.07, -jacare.w/2, jacare.h*0.30);
+  ctx.lineTo(-jacare.w/2+10, jacare.h*0.10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(jacare.w*0.47, -jacare.h*0.18, jacare.w*0.06, 0, 2*Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(jacare.w*0.50, -jacare.h*0.18, jacare.w*0.025, 0, 2*Math.PI);
+  ctx.fillStyle = '#111';
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(jacare.w*0.55, -jacare.h*0.03, 6, 7);
+  ctx.fillRect(jacare.w*0.52, 0, 6, 7);
+  ctx.restore();
+}
+
+function drawShell(shell) {
+  ctx.save();
+  ctx.translate(shell.x + shell.w/2, shell.y + shell.h/2);
+  ctx.beginPath();
+  ctx.arc(0, 0, shell.w/2.3, 0, Math.PI, true);
+  ctx.lineTo(-shell.w/2.3, shell.h/2.7);
+  ctx.quadraticCurveTo(0, shell.h/1.7, shell.w/2.3, shell.h/2.7);
+  ctx.closePath();
+  ctx.fillStyle = '#ffb347';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, shell.h/2.7);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-shell.w/6, 0);
+  ctx.lineTo(-shell.w/9, shell.h/2.7);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(shell.w/6, 0);
+  ctx.lineTo(shell.w/9, shell.h/2.7);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawObstacle(obs) {
+  ctx.save();
+  ctx.translate(obs.x + obs.w/2, obs.y + obs.h/2);
+  ctx.beginPath();
+  ctx.ellipse(0, obs.h/5, obs.w/2, obs.h/2.2, 0, 0, 2 * Math.PI);
+  ctx.fillStyle = '#888';
+  ctx.shadowColor = "#222";
+  ctx.shadowBlur = 4;
+  ctx.fill();
+  ctx.restore();
+}
+
+function loop() {
+  if (gameover || !isLandscape()) return;
+  ctx.clearRect(0,0,w(),h());
+
+  bgOffset -= speed * 2;
+  if(bgOffset < -w()) bgOffset += w();
+
+  drawBeach();
+
+  // Menina física
+  girl.vy += GRAVITY();
+  girl.y += girl.vy;
+  if (girl.y + girl.h >= GROUND_Y()) {
+    girl.y = GROUND_Y() - girl.h;
+    girl.vy = 0;
+    girl.jumping = false;
+  }
+
+  // Jacaré persegue a menina, mas nunca alcança sozinho
+  let dist = girl.x - jacare.x - jacare.w * 0.7;
+  let minDist = girl.w * 0.5;
+  if (dist > minDist) {
+    jacare.x += Math.min(speed * 0.82, dist * 0.08);
+  }
+
+  // Obstáculos
+  for (let o of obstacles) o.x -= speed;
+  obstacles = obstacles.filter(o => o.x + o.w > 0);
+
+  // Colisão menina/obstáculo
+  for (let i = 0; i < obstacles.length; i++) {
+    let obs = obstacles[i];
+    if (rectsCollide(girl, obs)) {
+      gameOver("Você tropeçou em uma pedra!");
+      return;
+    }
+  }
+
+  // Shells
+  for (let s of shells) s.x -= speed;
+  shells = shells.filter(s => s.x + s.w > 0);
+
+  // Colisão menina/shell
+  for (let i = shells.length-1; i >= 0; i--) {
+    let s = shells[i];
+    if (rectsCollide(girl,s)) {
+      shells.splice(i,1);
+      score++;
+      document.getElementById('score').innerText = "Conchas: " + score;
+      speed += w() * 0.00037;
+      // Jacaré não fica mais rápido!
+    }
+  }
+
+  // Colisão jacaré/menina
+  if (rectsCollide(jacare, girl)) {
+    gameOver("O jacaré pegou você!");
+    return;
+  }
+
+  // Desenha shells
+  for (let s of shells) drawShell(s);
+
+  // Desenha obstáculos
+  for (let o of obstacles) drawObstacle(o);
+
+  // Desenha personagens
+  drawGirl();
+  drawJacare();
+
+  requestAnimationFrame(loop);
+}
+
+function rectsCollide(a, b) {
+  return !(a.x + a.w < b.x + 10 ||
+           a.x > b.x + b.w - 10 ||
+           a.y + a.h < b.y + 10 ||
+           a.y > b.y + b.h - 10);
+}
+
+// Controles (Toque ou Tecla)
+function jump() {
+  if (!girl.jumping && !gameover && isLandscape()) {
+    girl.vy = JUMP_VELOCITY();
+    girl.jumping = true;
+    started = true;
+  }
+}
+canvas.addEventListener('touchstart', function(e){
+  e.preventDefault(); jump();
+}, {passive:false});
+canvas.addEventListener('pointerdown', function(e){
+  e.preventDefault(); jump();
+});
+window.addEventListener('keydown', function(e){
+  if (e.code === "Space" || e.code === "ArrowUp") jump();
+});
+
+function gameOver(msg) {
+  gameover = true;
+  document.getElementById('finalmsg').innerText =
+    (msg ? msg+"\n":"") + `Você coletou ${score} conchinha${score==1?'':'s'}!`;
+  document.getElementById('gameover').style.display = 'flex';
+}
+
+function restart() {
+  startGame();
+}
+
+// Orientação tela
+function checkOrientation() {
+  // No modo de simulação de celular, sempre mostra o jogo
+  document.getElementById('rotate').style.display = "none";
+  canvas.style.display = "";
+  document.getElementById('score').style.display = "";
+  if (gameover) return;
+  if (!started) startGame();
+}
+window.addEventListener('resize', checkOrientation);
+
+// Início
+checkOrientation();
+</script>
+</body>
+</html>
