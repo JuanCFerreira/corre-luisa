@@ -255,7 +255,7 @@ let GROUND_Y = () => h() * 0.82;
 let GRAVITY = () => h() * 0.0026;
 let JUMP_VELOCITY = () => -h() * 0.042; // Mais alto
 let GIRL_W = () => w() * 0.08, GIRL_H = () => h() * 0.32;
-let JACARE_W = () => w() * 0.13, JACARE_H = () => h() * 0.23;
+let JACARE_W = () => w() * 0.09, JACARE_H = () => h() * 0.18;
 let SHELL_SIZE = () => w() * 0.045;
 let OBSTACLE_W = () => w() * 0.045, OBSTACLE_H = () => h() * 0.10;
 let POWERUP_SIZE = () => w() * 0.06; // Tamanho dos itens de poder
@@ -452,7 +452,7 @@ function preloadCharacterAnimation() {
 function startGame() {
   setCanvasSize();  jacare = {
     x: w() * 0.03, // Posição inicial mais à esquerda
-    y: GROUND_Y() - JACARE_H() + 12,
+    y: GROUND_Y() - JACARE_H() + 5, // Ajustado para compensar a altura menor
     w: JACARE_W(),
     h: JACARE_H()
     // Removido jacare.speed, não é mais usado
@@ -956,13 +956,12 @@ function drawJacare() {
     currentJacareSpriteIndex = (currentJacareSpriteIndex + 1) % jacareSprites.length;
     lastJacareSpriteUpdateTime = currentTime;
   }
-  
-  // Desenhar sprite do jacaré se estiver carregado
+    // Desenhar sprite do jacaré se estiver carregado
   if (jacareSprites.length > 0 && jacareSprites[currentJacareSpriteIndex]) {
     const sprite = jacareSprites[currentJacareSpriteIndex];
     // Ajustar o tamanho para manter a proporção da imagem
     const spriteRatio = sprite.height / sprite.width;
-    const drawWidth = jacare.w * 1.5; // Um pouco maior que o retângulo original
+    const drawWidth = jacare.w * 1.3; // Reduzido de 1.5 para 1.3
     const drawHeight = drawWidth * spriteRatio;
     
     // Centralizar a imagem (considerando o ponto de origem no centro)
