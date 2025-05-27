@@ -275,6 +275,10 @@ const MAX_SPEED = 10;  // Velocidade máxima (dobro da velocidade inicial)
 const MAGNET_DURATION = 8000;  // Duração do imã: 8 segundos
 const SHIELD_DURATION = 6000;  // Duração do escudo: 6 segundos
 
+// Configurações de áudio
+const EFFECTS_VOLUME = 0.5; // Volume dos efeitos sonoros (0.0 a 1.0)
+const MUSIC_VOLUME = 0.3;   // Volume da música de fundo (0.0 a 1.0)
+
 let girl, jacare, shells, obstacles, score, gameover, bgOffset, speed, touchActive, started;
 let powerups = []; // Array para armazenar os itens de poder (imã e escudo)
 let magnetActive = false; // Estado do poder imã
@@ -366,16 +370,30 @@ function startGameFromMenu() {
   document.getElementById('score').style.display = '';
   document.getElementById('day-night-indicator').style.display = '';
   
+  // Inicializar áudio
+  initAudio();
+  
   // Iniciar o jogo
   startGame();
-  
-  // Iniciar a música de fundo (se existir)
+}
+
+// Função para inicializar o áudio
+function initAudio() {
+  // Configurar volume da música de fundo
   const backgroundMusic = document.getElementById('backgroundMusic');
   if (backgroundMusic) {
+    backgroundMusic.volume = MUSIC_VOLUME;
     backgroundMusic.play().catch(error => {
-      console.log("Reprodução automática bloqueada pelo navegador:", error);
+      console.log("Reprodução automática da música bloqueada pelo navegador:", error);
     });
   }
+  
+  // Configurar volume dos efeitos sonoros
+  const coinSound = document.getElementById('coinSound');
+  if (coinSound) coinSound.volume = EFFECTS_VOLUME;
+  
+  const powerSound = document.getElementById('powerSound');
+  if (powerSound) powerSound.volume = EFFECTS_VOLUME;
 }
 
 // Função para pré-carregar e animar o personagem na tela inicial
@@ -1012,12 +1030,14 @@ function loop() {
   // Power-ups
   for (let p of powerups) p.x -= speed;
   powerups = powerups.filter(p => p.x + p.w > 0);
-
   // Colisão menina/power-up
   for (let i = powerups.length-1; i >= 0; i--) {
     let p = powerups[i];
     if (rectsCollide(girl, p)) {
       powerups.splice(i, 1);
+      
+      // Tocar som de poder
+      playSound('powerSound');
       
       if (p.type === 0) { // Imã
         magnetActive = true;
@@ -1053,6 +1073,10 @@ function loop() {
       shells.splice(i,1);
       score++;
       document.getElementById('score').innerText = "Conchas: " + score;
+      
+      // Tocar som de concha
+      playSound('coinSound');
+      
         // Alternar entre dia e noite a cada 50 conchas
       if (score % 50 === 0) {
         isNightMode = !isNightMode;
@@ -1132,6 +1156,21 @@ function rectsCollide(a, b) {
            a.x > b.x + b.w - 10 ||
            a.y + a.h < b.y + 10 ||
            a.y > b.y + b.h - 10);
+}
+
+// Função para tocar efeitos sonoros
+function playSound(soundId) {
+  const sound = document.getElementById(soundId);
+  if (sound) {
+    // Reiniciar o som se já estiver tocando
+    sound.pause();
+    sound.currentTime = 0;
+    
+    // Tocar o som
+    sound.play().catch(error => {
+      console.log(`Erro ao reproduzir som ${soundId}:`, error);
+    });
+  }
 }
 
 // Controles (Toque ou Tecla)
@@ -1364,6 +1403,14 @@ gameover = false;
 </script>
 <audio id="backgroundMusic" loop>
   <source src="songs/background-music.mp3" type="audio/mpeg">
+  Seu navegador não suporta o elemento de áudio.
+</audio>
+<audio id="coinSound">
+  <source src="songs/effects/coin.mp3" type="audio/mpeg">
+  Seu navegador não suporta o elemento de áudio.
+</audio>
+<audio id="powerSound">
+  <source src="songs/effects/power.mp3" type="audio/mpeg">
   Seu navegador não suporta o elemento de áudio.
 </audio>
 
