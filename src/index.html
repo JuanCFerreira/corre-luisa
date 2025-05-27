@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Corre Luisa</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="phone-container">
+    <div id="game-area">
+      <div id="rotate">Por favor, gire o celular para a horizontal (paisagem) para jogar!</div>
+      <div id="score">Conchas: 0</div>
+      <div id="day-night-indicator"></div>
+      <button id="fullscreen-btn" aria-label="Tela cheia"></button>
+      <div id="gameover">
+        <div id="finalmsg"></div>
+        <button id="restart-btn">Jogar novamente</button>
+      </div>
+      <div id="startscreen">
+        <h1>Corre Luisa</h1>
+        <div class="character-preview" id="character-preview"></div>
+        <p>Ajude Luisa a fugir do jacaré e coletar conchas!</p>
+        <button id="start-btn">Começar!</button>
+      </div>
+      <canvas id="game"></canvas>
+    </div>
+  </div>
+
+  <!-- Áudio -->
+  <audio id="backgroundMusic" loop>
+    <source src="songs/background-music.mp3" type="audio/mpeg">
+    Seu navegador não suporta o elemento de áudio.
+  </audio>
+  <audio id="coinSound">
+    <source src="songs/effects/coin.mp3" type="audio/mpeg">
+    Seu navegador não suporta o elemento de áudio.
+  </audio>
+  <audio id="powerSound">
+    <source src="songs/effects/power.mp3" type="audio/mpeg">
+    Seu navegador não suporta o elemento de áudio.
+  </audio>
+  <audio id="magnetSound" loop>
+    <source src="songs/effects/magnet.mp3" type="audio/mpeg">
+    Seu navegador não suporta o elemento de áudio.
+  </audio>
+  <audio id="shieldSound" loop>
+    <source src="songs/effects/shield.mp3" type="audio/mpeg">
+    Seu navegador não suporta o elemento de áudio.
+  </audio>
+
+  <!-- Scripts do jogo -->
+  <script src="js/utils/constants.js"></script>
+  <script src="js/utils/helpers.js"></script>
+  <script src="js/core/audio.js"></script>
+  <script src="js/core/screen.js"></script>
+  <script src="js/entities/girl.js"></script>
+  <script src="js/entities/jacare.js"></script>
+  <script src="js/entities/shell.js"></script>
+  <script src="js/entities/obstacle.js"></script>
+  <script src="js/entities/powerup.js"></script>
+  <script src="js/core/renderer.js"></script>
+  <script src="js/ui/indicators.js"></script>
+  <script src="js/core/collision.js"></script>
+  <script src="js/core/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

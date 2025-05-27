@@ -8,6 +8,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./index.html:/usr/share/nginx/html/index.html
+      - ./src:/usr/share/nginx/html
       - ./sprites:/usr/share/nginx/html/sprites
+      - ./songs:/usr/share/nginx/html/songs
     restart: unless-stopped
