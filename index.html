@@ -394,6 +394,13 @@ function initAudio() {
   
   const powerSound = document.getElementById('powerSound');
   if (powerSound) powerSound.volume = EFFECTS_VOLUME;
+  
+  // Configurar volume dos sons de loop
+  const magnetSound = document.getElementById('magnetSound');
+  if (magnetSound) magnetSound.volume = EFFECTS_VOLUME * 2; // Volume um pouco mais baixo para não ser intrusivo
+  
+  const shieldSound = document.getElementById('shieldSound');
+  if (shieldSound) shieldSound.volume = EFFECTS_VOLUME * 2; // Volume um pouco mais baixo para não ser intrusivo
 }
 
 // Função para pré-carregar e animar o personagem na tela inicial
@@ -469,7 +476,12 @@ function startGame() {
   // Reiniciar tempos dos poderes
   magnetEndTime = 0;
   shieldEndTime = 0;
-  lastObstacleX = 0; // Reiniciar a posição do último obstáculo  isNightMode = false; // Iniciar com cenário diurno
+  
+  // Parar quaisquer sons de loop que possam estar tocando
+  stopLoopSound('magnetSound');
+  stopLoopSound('shieldSound');
+  
+  lastObstacleX = 0; // Reiniciar a posição do último obstáculoisNightMode = false; // Iniciar com cenário diurno
   document.body.classList.remove('night-mode'); // Remover classe de modo noturno
   document.getElementById('score').innerText = "Conchas: 0";  document.getElementById('gameover').style.display = 'none';
   
@@ -969,14 +981,17 @@ function loop() {
   if(bgOffset < -w()) bgOffset += w();
 
   drawBeach();
-
   // Verificar se os poderes estão ativos
   const currentTime = Date.now();
   if (magnetActive && currentTime > magnetEndTime) {
     magnetActive = false;
+    // Parar o som de magnetismo quando o poder terminar
+    stopLoopSound('magnetSound');
   }
   if (shieldActive && currentTime > shieldEndTime) {
     shieldActive = false;
+    // Parar o som de escudo quando o poder terminar
+    stopLoopSound('shieldSound');
   }
 
   // Menina física
@@ -1038,13 +1053,16 @@ function loop() {
       
       // Tocar som de poder
       playSound('powerSound');
-      
-      if (p.type === 0) { // Imã
+        if (p.type === 0) { // Imã
         magnetActive = true;
         magnetEndTime = Date.now() + MAGNET_DURATION;
+        // Iniciar o som de magnetismo em loop
+        startLoopSound('magnetSound');
       } else { // Escudo
         shieldActive = true;
         shieldEndTime = Date.now() + SHIELD_DURATION;
+        // Iniciar o som de escudo em loop
+        startLoopSound('shieldSound');
       }
     }
   }
@@ -1173,6 +1191,38 @@ function playSound(soundId) {
   }
 }
 
+// Função para iniciar som em loop
+function startLoopSound(soundId) {
+  const sound = document.getElementById(soundId);
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch(error => {
+      console.log(`Erro ao iniciar loop de som ${soundId}:`, error);
+    });
+  }
+}
+
+// Função para parar som em loop
+function stopLoopSound(soundId) {
+  const sound = document.getElementById(soundId);
+  if (sound) {
+    // Fade out suave antes de parar completamente
+    const fadeOutInterval = setInterval(() => {
+      // Reduzir volume gradualmente
+      if (sound.volume > 0.05) {
+        sound.volume -= 0.05;
+      } else {
+        // Quando o volume estiver bem baixo, parar o som e o intervalo
+        sound.pause();
+        sound.currentTime = 0;
+        // Restaurar o volume original para próxima vez
+        sound.volume = EFFECTS_VOLUME;
+        clearInterval(fadeOutInterval);
+      }
+    }, 50);
+  }
+}
+
 // Controles (Toque ou Tecla)
 function jump() {
   if (!girl.jumping && !gameover && isLandscape()) {
@@ -1217,6 +1267,10 @@ function gameOver(msg) {
   document.getElementById('finalmsg').innerText =
     (msg ? msg+"\n":"") + `Você coletou ${score} conchinha${score==1?'':'s'}!`;
   document.getElementById('gameover').style.display = 'flex';
+  
+  // Parar todos os efeitos sonoros de loop
+  stopLoopSound('magnetSound');
+  stopLoopSound('shieldSound');
 }
 
 function restart() {
@@ -1411,6 +1465,14 @@ gameover = false;
 </audio>
 <audio id="powerSound">
   <source src="songs/effects/power.mp3" type="audio/mpeg">
+  Seu navegador não suporta o elemento de áudio.
+</audio>
+<audio id="magnetSound" loop>
+  <source src="songs/effects/magnet.mp3" type="audio/mpeg">
+  Seu navegador não suporta o elemento de áudio.
+</audio>
+<audio id="shieldSound" loop>
+  <source src="songs/effects/shield.mp3" type="audio/mpeg">
   Seu navegador não suporta o elemento de áudio.
 </audio>
 
