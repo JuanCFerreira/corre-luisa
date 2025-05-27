@@ -191,6 +191,7 @@ const Game = {
     flashElement.style.backgroundColor = this.isNightMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
     flashElement.style.zIndex = '5';
     flashElement.style.transition = 'opacity 1.5s';
+    flashElement.style.pointerEvents = 'none'; // Não bloquear toques!
     document.getElementById('game-area').appendChild(flashElement);
     
     // Remover o flash após a animação
