@@ -534,7 +534,7 @@ function spawnShell() {
 // Função para criar padrões especiais de conchas
 function createShellPattern() {
   // Escolher aleatoriamente entre diferentes padrões
-  const patternType = Math.floor(Math.random() * 5); // 0-4 para diferentes padrões (adicionamos o arco invertido)
+  const patternType = Math.floor(Math.random() * 6); // 0-5 para diferentes padrões (adicionamos o padrão LUISA)
   
   switch(patternType) {
     case 0:
@@ -551,6 +551,9 @@ function createShellPattern() {
       break;
     case 4:
       createInvertedArcPattern(); // Arco invertido de conchas
+      break;
+    case 5:
+      createLuisaTextPattern(); // Texto "LUISA" com conchas
       break;
   }
 }
@@ -607,6 +610,90 @@ function createInvertedArcPattern() {
       h: SHELL_SIZE()
     });
   }
+}
+
+// Criar padrão de texto "LUISA" com conchas
+function createLuisaTextPattern() {
+  const baseX = w() + SHELL_SIZE();
+  const baseY = GROUND_Y() - SHELL_SIZE() * 5 - Math.random() * (h() * 0.1); // Posição mais alta para o texto
+  const letterSpacing = SHELL_SIZE() * 1.2; // Espaçamento entre letras
+  const dotSpacing = SHELL_SIZE() * 0.8; // Espaçamento entre pontos de cada letra
+  
+  // Definir pontos para formar cada letra de "LUISA"
+  // Letra L
+  const L = [
+    {x: 0, y: 0}, // topo
+    {x: 0, y: 1}, // meio
+    {x: 0, y: 2}, // base
+    {x: 1, y: 2}, // base direita
+    {x: 2, y: 2}  // base direita mais
+  ];
+  
+  // Letra U
+  const U = [
+    {x: 0, y: 0}, // topo esquerdo
+    {x: 0, y: 1}, // meio esquerdo
+    {x: 0, y: 2}, // base esquerdo
+    {x: 1, y: 2}, // base meio
+    {x: 2, y: 0}, // topo direito
+    {x: 2, y: 1}, // meio direito
+    {x: 2, y: 2}  // base direito
+  ];
+  
+  // Letra I
+  const I = [
+    {x: 0, y: 0}, // topo esquerdo
+    {x: 1, y: 0}, // topo meio
+    {x: 2, y: 0}, // topo direito
+    {x: 1, y: 1}, // meio
+    {x: 0, y: 2}, // base esquerdo
+    {x: 1, y: 2}, // base meio
+    {x: 2, y: 2}  // base direito
+  ];
+  
+  // Letra S
+  const S = [
+    {x: 0, y: 0}, // topo esquerdo
+    {x: 1, y: 0}, // topo meio
+    {x: 2, y: 0}, // topo direito
+    {x: 0, y: 1}, // meio esquerdo
+    {x: 1, y: 1}, // meio
+    {x: 2, y: 2}, // base direito
+    {x: 1, y: 2}, // base meio
+    {x: 0, y: 2}  // base esquerdo
+  ];
+  
+  // Letra A
+  const A = [
+    {x: 0, y: 2}, // base esquerdo
+    {x: 0, y: 1}, // meio esquerdo
+    {x: 0, y: 0}, // topo esquerdo
+    {x: 1, y: 0}, // topo meio
+    {x: 2, y: 0}, // topo direito
+    {x: 2, y: 1}, // meio direito
+    {x: 2, y: 2}, // base direito
+    {x: 1, y: 1}  // meio (barra horizontal)
+  ];
+  
+  // Função para criar pontos de uma letra
+  function createLetterPoints(letter, offsetX) {
+    for (let i = 0; i < letter.length; i++) {
+      const point = letter[i];
+      shells.push({
+        x: baseX + offsetX + point.x * dotSpacing,
+        y: baseY + point.y * dotSpacing,
+        w: SHELL_SIZE(),
+        h: SHELL_SIZE()
+      });
+    }
+  }
+  
+  // Criar pontos para formar "LUISA"
+  createLetterPoints(L, 0);
+  createLetterPoints(U, 4 * letterSpacing);
+  createLetterPoints(I, 8 * letterSpacing);
+  createLetterPoints(S, 12 * letterSpacing);
+  createLetterPoints(A, 16 * letterSpacing);
 }
 
 // Criar padrão em zig-zag
