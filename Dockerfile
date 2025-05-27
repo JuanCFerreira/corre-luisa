@@ -1,9 +1,9 @@
 FROM nginx:alpine
 
 # Copy the game files to the nginx html directory
-COPY src/ /usr/share/nginx/html/
-COPY sprites/ /usr/share/nginx/html/sprites/
-COPY songs/ /usr/share/nginx/html/songs/
+COPY src/index.html /usr/share/nginx/html/
+COPY src/sprites/ /usr/share/nginx/html/
+COPY src/songs/ /usr/share/nginx/html/
 
 # Configure nginx to listen on port 8080
 COPY nginx.conf /etc/nginx/conf.d/default.conf

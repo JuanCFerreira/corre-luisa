@@ -9,6 +9,6 @@ services:
       - "8080:8080"
     volumes:
       - ./src:/usr/share/nginx/html
-      - ./sprites:/usr/share/nginx/html/sprites
-      - ./songs:/usr/share/nginx/html/songs
+      - ./src/sprites:/usr/share/nginx/html/sprites
+      - ./src/songs:/usr/share/nginx/html/songs
     restart: unless-stopped
