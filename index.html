@@ -514,15 +514,111 @@ function spawnShell() {
   const interval = Math.random() * (w() * SHELL_FREQUENCY_MAX) + w() * SHELL_FREQUENCY_MIN;
   setTimeout(() => {
     if (!gameover && isLandscape()) {
-      shells.push({
-        x: w() + SHELL_SIZE(),
-        y: GROUND_Y() - SHELL_SIZE() - Math.random() * (h() * 0.15),
-        w: SHELL_SIZE(),
-        h: SHELL_SIZE()
-      });
+      // Chance de criar um padrão especial de conchas (aproximadamente 20% de chance)
+      if (Math.random() < 0.2) {
+        createShellPattern();
+      } else {
+        // Concha individual normal
+        shells.push({
+          x: w() + SHELL_SIZE(),
+          y: GROUND_Y() - SHELL_SIZE() - Math.random() * (h() * 0.15),
+          w: SHELL_SIZE(),
+          h: SHELL_SIZE()
+        });
+      }
       spawnShell();
     }
   }, interval / speed * 16);
+}
+
+// Função para criar padrões especiais de conchas
+function createShellPattern() {
+  // Escolher aleatoriamente entre diferentes padrões
+  const patternType = Math.floor(Math.random() * 4); // 0-3 para diferentes padrões
+  
+  switch(patternType) {
+    case 0:
+      createStraightLinePattern(); // Linha reta horizontal
+      break;
+    case 1:
+      createArcPattern(); // Arco de conchas
+      break;
+    case 2:
+      createZigZagPattern(); // Padrão em zig-zag
+      break;
+    case 3:
+      createDiagonalLinePattern(); // Linha diagonal
+      break;
+  }
+}
+
+// Criar padrão de linha reta com conchas
+function createStraightLinePattern() {
+  const shellCount = 5 + Math.floor(Math.random() * 3); // 5 a 7 conchas
+  const baseY = GROUND_Y() - SHELL_SIZE() - Math.random() * (h() * 0.15);
+  const spacing = SHELL_SIZE() * 1.3; // Espaço entre as conchas
+  
+  for (let i = 0; i < shellCount; i++) {
+    shells.push({
+      x: w() + SHELL_SIZE() + (spacing * i),
+      y: baseY,
+      w: SHELL_SIZE(),
+      h: SHELL_SIZE()
+    });
+  }
+}
+
+// Criar padrão de arco com conchas
+function createArcPattern() {
+  const shellCount = 5 + Math.floor(Math.random() * 4); // 5 a 8 conchas
+  const baseX = w() + SHELL_SIZE();
+  const radius = h() * 0.15; // Raio do arco
+  const centerY = GROUND_Y() - SHELL_SIZE() - radius - Math.random() * (h() * 0.05);
+  
+  for (let i = 0; i < shellCount; i++) {
+    // Calcular posição em um arco semicircular
+    const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)
+    shells.push({
+      x: baseX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius,
+      w: SHELL_SIZE(),
+      h: SHELL_SIZE()
+    });
+  }
+}
+
+// Criar padrão em zig-zag
+function createZigZagPattern() {
+  const shellCount = 6 + Math.floor(Math.random() * 3); // 6 a 8 conchas
+  const baseY = GROUND_Y() - SHELL_SIZE() - (h() * 0.1);
+  const spacing = SHELL_SIZE() * 1.3; // Espaço horizontal entre as conchas
+  const verticalOffset = SHELL_SIZE() * 1.5; // Quantidade de deslocamento vertical
+  
+  for (let i = 0; i < shellCount; i++) {
+    shells.push({
+      x: w() + SHELL_SIZE() + (spacing * i),
+      y: baseY + ((i % 2 === 0) ? 0 : -verticalOffset), // Alterna entre duas alturas
+      w: SHELL_SIZE(),
+      h: SHELL_SIZE()
+    });
+  }
+}
+
+// Criar padrão de linha diagonal
+function createDiagonalLinePattern() {
+  const shellCount = 5 + Math.floor(Math.random() * 3); // 5 a 7 conchas
+  const startY = GROUND_Y() - SHELL_SIZE() - (h() * 0.05);
+  const spacing = SHELL_SIZE() * 1.3; // Espaço horizontal entre as conchas
+  const slope = SHELL_SIZE() * 1.2; // Inclinação da diagonal
+  
+  for (let i = 0; i < shellCount; i++) {
+    shells.push({
+      x: w() + SHELL_SIZE() + (spacing * i),
+      y: startY - (slope * i), // Subindo diagonalmente
+      w: SHELL_SIZE(),
+      h: SHELL_SIZE()
+    });
+  }
 }
 
 // Obstáculos (pedras)
@@ -1056,13 +1152,9 @@ function loop() {
         if (p.type === 0) { // Imã
         magnetActive = true;
         magnetEndTime = Date.now() + MAGNET_DURATION;
-        // Iniciar o som de magnetismo em loop
-        startLoopSound('magnetSound');
       } else { // Escudo
         shieldActive = true;
         shieldEndTime = Date.now() + SHIELD_DURATION;
-        // Iniciar o som de escudo em loop
-        startLoopSound('shieldSound');
       }
     }
   }
