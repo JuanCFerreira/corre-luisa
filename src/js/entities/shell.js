@@ -6,10 +6,23 @@ const ShellManager = {
   // Array de conchas
   shells: [],
   
+  // Sprite da concha
+  shellSprite: null,
+  
   // Inicializar o gerenciador
   init() {
     this.shells = [];
+    this.loadSprite();
     this.spawnShell();
+  },
+  
+  // Carregar sprite da concha
+  loadSprite() {
+    this.shellSprite = new Image();
+    this.shellSprite.src = 'sprites/coins/1.png';
+    this.shellSprite.onerror = () => {
+      console.error('Failed to load shell sprite');
+    };
   },
   
   // Criar uma nova concha
@@ -244,31 +257,46 @@ const ShellManager = {
       }
     }
   },
-  
-  // Desenhar uma concha
+    // Desenhar uma concha
   drawShell(ctx, shell) {
     ctx.save();
     ctx.translate(shell.x + shell.w/2, shell.y + shell.h/2);
-    ctx.beginPath();
-    ctx.arc(0, 0, shell.w/2.3, 0, Math.PI, true);
-    ctx.lineTo(-shell.w/2.3, shell.h/2.7);
-    ctx.quadraticCurveTo(0, shell.h/1.7, shell.w/2.3, shell.h/2.7);
-    ctx.closePath();
-    ctx.fillStyle = '#ffb347';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, shell.h/2.7);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(-shell.w/6, 0);
-    ctx.lineTo(-shell.w/9, shell.h/2.7);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(shell.w/6, 0);
-    ctx.lineTo(shell.w/9, shell.h/2.7);
-    ctx.stroke();
+    
+    // Usar sprite se carregado, senão usar desenho original
+    if (this.shellSprite && this.shellSprite.complete) {
+      const drawWidth = shell.w * 1.2;
+      const drawHeight = shell.h * 1.2;
+      ctx.drawImage(
+        this.shellSprite, 
+        -drawWidth/2, 
+        -drawHeight/2, 
+        drawWidth, 
+        drawHeight
+      );
+    } else {
+      // Fallback para o desenho original
+      ctx.beginPath();
+      ctx.arc(0, 0, shell.w/2.3, 0, Math.PI, true);
+      ctx.lineTo(-shell.w/2.3, shell.h/2.7);
+      ctx.quadraticCurveTo(0, shell.h/1.7, shell.w/2.3, shell.h/2.7);
+      ctx.closePath();
+      ctx.fillStyle = '#ffb347';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, shell.h/2.7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-shell.w/6, 0);
+      ctx.lineTo(-shell.w/9, shell.h/2.7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(shell.w/6, 0);
+      ctx.lineTo(shell.w/9, shell.h/2.7);
+      ctx.stroke();
+    }
+    
     ctx.restore();
   },
   

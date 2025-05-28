@@ -6,10 +6,30 @@ const PowerupManager = {
   // Array de powerups
   powerups: [],
   
+  // Sprites dos powerups
+  magnetSprite: null,
+  shieldSprite: null,
+  
   // Inicializar o gerenciador
   init() {
     this.powerups = [];
+    this.loadSprites();
     this.spawnPowerup();
+  },
+  
+  // Carregar sprites dos powerups
+  loadSprites() {
+    this.magnetSprite = new Image();
+    this.magnetSprite.src = 'sprites/powers/magnet.png';
+    this.magnetSprite.onerror = () => {
+      console.error('Failed to load magnet sprite');
+    };
+    
+    this.shieldSprite = new Image();
+    this.shieldSprite.src = 'sprites/powers/shield.png';
+    this.shieldSprite.onerror = () => {
+      console.error('Failed to load shield sprite');
+    };
   },
   
   // Criar um novo item de poder
@@ -80,8 +100,7 @@ const PowerupManager = {
       }
     }
   },
-  
-  // Desenhar um item de poder
+    // Desenhar um item de poder
   drawPowerup(ctx, powerup) {
     ctx.save();
     ctx.translate(powerup.x + powerup.w/2, powerup.y + powerup.h/2);
@@ -89,46 +108,62 @@ const PowerupManager = {
     // Efeito de rotação suave
     ctx.rotate(Date.now() / 800);
     
-    if (powerup.type === POWERUP_TYPES.MAGNET) { // Imã
-      // Desenha imã
-      ctx.fillStyle = '#1e90ff';
-      ctx.beginPath();
-      ctx.arc(0, 0, powerup.w/2.5, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Ferradura do imã
-      ctx.fillStyle = '#ff0000';
-      ctx.beginPath();
-      ctx.arc(0, -powerup.h/8, powerup.w/4, Math.PI, 0, true);
-      ctx.fill();
-      
-      // Polos do imã
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-powerup.w/4, -powerup.h/5, powerup.w/10, powerup.h/3.5);
-      ctx.fillRect(powerup.w/4 - powerup.w/10, -powerup.h/5, powerup.w/10, powerup.h/3.5);
-    } else { // Escudo
-      // Desenha escudo
-      ctx.fillStyle = '#9370db';
-      ctx.beginPath();
-      ctx.arc(0, 0, powerup.w/2.5, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Desenho do escudo
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(0, 0, powerup.w/4, 0, 2 * Math.PI);
-      ctx.stroke();
-      
-      // Detalhes do escudo
-      ctx.beginPath();
-      ctx.moveTo(0, -powerup.h/5);
-      ctx.lineTo(0, powerup.h/5);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-powerup.w/5, 0);
-      ctx.lineTo(powerup.w/5, 0);
-      ctx.stroke();
+    // Usar sprites se carregados
+    const sprite = powerup.type === POWERUP_TYPES.MAGNET ? this.magnetSprite : this.shieldSprite;
+    
+    if (sprite && sprite.complete) {
+      const drawWidth = powerup.w * 1.3;
+      const drawHeight = powerup.h * 1.3;
+      ctx.drawImage(
+        sprite, 
+        -drawWidth/2, 
+        -drawHeight/2, 
+        drawWidth, 
+        drawHeight
+      );
+    } else {
+      // Fallback para desenho original
+      if (powerup.type === POWERUP_TYPES.MAGNET) { // Imã
+        // Desenha imã
+        ctx.fillStyle = '#1e90ff';
+        ctx.beginPath();
+        ctx.arc(0, 0, powerup.w/2.5, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Ferradura do imã
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(0, -powerup.h/8, powerup.w/4, Math.PI, 0, true);
+        ctx.fill();
+        
+        // Polos do imã
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-powerup.w/4, -powerup.h/5, powerup.w/10, powerup.h/3.5);
+        ctx.fillRect(powerup.w/4 - powerup.w/10, -powerup.h/5, powerup.w/10, powerup.h/3.5);
+      } else { // Escudo
+        // Desenha escudo
+        ctx.fillStyle = '#9370db';
+        ctx.beginPath();
+        ctx.arc(0, 0, powerup.w/2.5, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Desenho do escudo
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, powerup.w/4, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Detalhes do escudo
+        ctx.beginPath();
+        ctx.moveTo(0, -powerup.h/5);
+        ctx.lineTo(0, powerup.h/5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-powerup.w/5, 0);
+        ctx.lineTo(powerup.w/5, 0);
+        ctx.stroke();
+      }
     }
     
     // Efeito brilhante
