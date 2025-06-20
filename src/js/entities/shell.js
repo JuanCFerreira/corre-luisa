@@ -264,8 +264,8 @@ const ShellManager = {
     
     // Usar sprite se carregado, senão usar desenho original
     if (this.shellSprite && this.shellSprite.complete) {
-      const drawWidth = shell.w * 1.2;
-      const drawHeight = shell.h * 1.2;
+      const drawWidth = shell.w * 1;
+      const drawHeight = shell.h * 1;
       ctx.drawImage(
         this.shellSprite, 
         -drawWidth/2, 

@@ -112,8 +112,8 @@ const PowerupManager = {
     const sprite = powerup.type === POWERUP_TYPES.MAGNET ? this.magnetSprite : this.shieldSprite;
     
     if (sprite && sprite.complete) {
-      const drawWidth = powerup.w * 1.3;
-      const drawHeight = powerup.h * 1.3;
+      const drawWidth = powerup.w * 0.8;
+      const drawHeight = powerup.h * 0.8;
       ctx.drawImage(
         sprite, 
         -drawWidth/2, 
