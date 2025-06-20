@@ -107,13 +107,14 @@ const ShellManager = {
     const baseX = canvasUtils.w() + canvasUtils.SHELL_SIZE();
     const radius = canvasUtils.h() * 0.15; // Raio do arco
     const centerY = canvasUtils.GROUND_Y() - canvasUtils.SHELL_SIZE() - radius - Math.random() * (canvasUtils.h() * 0.05);
-    
-    for (let i = 0; i < shellCount; i++) {
+      for (let i = 0; i < shellCount; i++) {
       // Calcular posição em um arco semicircular
-      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)      const shellY = centerY + Math.sin(angle) * radius;
+      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)
+      const shellY = centerY + Math.sin(angle) * radius;
       this.shells.push({
         x: baseX + Math.cos(angle) * radius,
-        y: shellY,        w: canvasUtils.SHELL_SIZE(),
+        y: shellY,
+        w: canvasUtils.SHELL_SIZE(),
         h: canvasUtils.SHELL_SIZE(),
         // Propriedades para animação
         baseY: shellY,
@@ -317,6 +318,8 @@ const ShellManager = {
     if (this.shellSprite && this.shellSprite.complete) {
       const drawWidth = shell.w * 1;
       const drawHeight = shell.h * 1;
+      
+      // Desenhar a concha
       ctx.drawImage(
         this.shellSprite, 
         -drawWidth/2, 
@@ -324,16 +327,47 @@ const ShellManager = {
         drawWidth, 
         drawHeight
       );
+      
+      // Adicionar efeito de brilho sobre a sprite
+      ctx.globalCompositeOperation = 'overlay';
+      const glowGradient = ctx.createRadialGradient(
+        -drawWidth/6, -drawHeight/6, 0,  // Centro do brilho (ligeiramente deslocado)
+        -drawWidth/6, -drawHeight/6, drawWidth/2  // Raio do brilho
+      );
+      glowGradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+      glowGradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.3)');
+      glowGradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.1)');
+      glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      
+      ctx.fillStyle = glowGradient;
+      ctx.fillRect(-drawWidth/2, -drawHeight/2, drawWidth, drawHeight);
+      
+      // Resetar o modo de composição
+      ctx.globalCompositeOperation = 'source-over';
+      
     } else {
-      // Fallback para o desenho original
+      // Fallback para o desenho original com brilho
       ctx.beginPath();
       ctx.arc(0, 0, shell.w/2.3, 0, Math.PI, true);
       ctx.lineTo(-shell.w/2.3, shell.h/2.7);
       ctx.quadraticCurveTo(0, shell.h/1.7, shell.w/2.3, shell.h/2.7);
       ctx.closePath();
-      ctx.fillStyle = '#ffb347';
+      
+      // Criar gradiente para a base da concha
+      const baseGradient = ctx.createRadialGradient(
+        -shell.w/6, -shell.h/6, 0,
+        0, 0, shell.w/2
+      );
+      baseGradient.addColorStop(0, '#ffe6cc');
+      baseGradient.addColorStop(0.5, '#ffb347');
+      baseGradient.addColorStop(1, '#ff9500');
+      
+      ctx.fillStyle = baseGradient;
       ctx.fill();
+      
+      // Linhas da concha
       ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(0, shell.h/2.7);
@@ -346,6 +380,27 @@ const ShellManager = {
       ctx.moveTo(shell.w/6, 0);
       ctx.lineTo(shell.w/9, shell.h/2.7);
       ctx.stroke();
+      
+      // Adicionar brilho especular
+      ctx.globalCompositeOperation = 'overlay';
+      const specularGradient = ctx.createRadialGradient(
+        -shell.w/4, -shell.h/4, 0,
+        -shell.w/4, -shell.h/4, shell.w/3
+      );
+      specularGradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+      specularGradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.3)');
+      specularGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      
+      ctx.fillStyle = specularGradient;
+      ctx.beginPath();
+      ctx.arc(0, 0, shell.w/2.3, 0, Math.PI, true);
+      ctx.lineTo(-shell.w/2.3, shell.h/2.7);
+      ctx.quadraticCurveTo(0, shell.h/1.7, shell.w/2.3, shell.h/2.7);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Resetar o modo de composição
+      ctx.globalCompositeOperation = 'source-over';
     }
     
     ctx.restore();
