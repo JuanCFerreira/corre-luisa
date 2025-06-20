@@ -42,7 +42,7 @@ const ShellManager = {
             baseY: 0, // Será definida após criação
             bounceOffset: 0,
             rotationOffset: 0, // Para o movimento de dança
-            rotationAmplitude: 0.2 + Math.random() * 0.3, // Amplitude da rotação (radianos) - entre 0.2 e 0.5
+            rotationAmplitude: 0.1 + Math.random() * 0.15, // Amplitude da rotação reduzida (radianos) - entre 0.1 e 0.25
             animationSpeed: 0.05 + Math.random() * 0.03, // Velocidade da animação (variação entre conchas)
             bounceAmplitude: 3 + Math.random() * 4 // Amplitude do movimento vertical
           });
@@ -95,7 +95,7 @@ const ShellManager = {
         baseY: baseY,
         bounceOffset: 0,
         rotationOffset: 0,
-        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        rotationAmplitude: 0.1 + Math.random() * 0.15,
         animationSpeed: 0.05 + Math.random() * 0.03,
         bounceAmplitude: 3 + Math.random() * 4
       });
@@ -113,20 +113,20 @@ const ShellManager = {
       const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)      const shellY = centerY + Math.sin(angle) * radius;
       this.shells.push({
         x: baseX + Math.cos(angle) * radius,
-        y: shellY,
-        w: canvasUtils.SHELL_SIZE(),
+        y: shellY,        w: canvasUtils.SHELL_SIZE(),
         h: canvasUtils.SHELL_SIZE(),
         // Propriedades para animação
         baseY: shellY,
         bounceOffset: 0,
         rotationOffset: 0,
-        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        rotationAmplitude: 0.1 + Math.random() * 0.15,
         animationSpeed: 0.05 + Math.random() * 0.03,
         bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
-    // Criar padrão de arco invertido com conchas
+
+  // Criar padrão de arco invertido com conchas
   createInvertedArcPattern() {
     const shellCount = 5 + Math.floor(Math.random() * 4); // 5 a 8 conchas
     const baseX = canvasUtils.w() + canvasUtils.SHELL_SIZE();
@@ -140,12 +140,11 @@ const ShellManager = {
         x: baseX + Math.cos(angle) * radius,
         y: shellY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE(),
-        // Propriedades para animação
+        h: canvasUtils.SHELL_SIZE(),        // Propriedades para animação
         baseY: shellY,
         bounceOffset: 0,
         rotationOffset: 0,
-        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        rotationAmplitude: 0.1 + Math.random() * 0.15,
         animationSpeed: 0.05 + Math.random() * 0.03,
         bounceAmplitude: 3 + Math.random() * 4
       });
@@ -187,12 +186,11 @@ const ShellManager = {
           x: baseX + offsetX + point.x * dotSpacing,
           y: shellY,
           w: canvasUtils.SHELL_SIZE(),
-          h: canvasUtils.SHELL_SIZE(),
-          // Propriedades para animação
+          h: canvasUtils.SHELL_SIZE(),          // Propriedades para animação
           baseY: shellY,
           bounceOffset: 0,
           rotationOffset: 0,
-          rotationAmplitude: 0.2 + Math.random() * 0.3,
+          rotationAmplitude: 0.1 + Math.random() * 0.15,
           animationSpeed: 0.05 + Math.random() * 0.03,
           bounceAmplitude: 3 + Math.random() * 4
         });
@@ -215,18 +213,18 @@ const ShellManager = {
         x: canvasUtils.w() + canvasUtils.SHELL_SIZE() + (spacing * i),
         y: shellY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE(),
-        // Propriedades para animação
+        h: canvasUtils.SHELL_SIZE(),        // Propriedades para animação
         baseY: shellY,
         bounceOffset: 0,
         rotationOffset: 0,
-        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        rotationAmplitude: 0.1 + Math.random() * 0.15,
         animationSpeed: 0.05 + Math.random() * 0.03,
         bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
-    // Criar padrão de linha diagonal
+
+  // Criar padrão de linha diagonal
   createDiagonalLinePattern() {
     const shellCount = 5 + Math.floor(Math.random() * 3); // 5 a 7 conchas
     const startY = canvasUtils.GROUND_Y() - canvasUtils.SHELL_SIZE() - (canvasUtils.h() * 0.05);
@@ -238,17 +236,17 @@ const ShellManager = {
         x: canvasUtils.w() + canvasUtils.SHELL_SIZE() + (spacing * i),
         y: shellY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE(),
-        // Propriedades para animação
+        h: canvasUtils.SHELL_SIZE(),        // Propriedades para animação
         baseY: shellY,
         bounceOffset: 0,
         rotationOffset: 0,
-        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        rotationAmplitude: 0.1 + Math.random() * 0.15,
         animationSpeed: 0.05 + Math.random() * 0.03,
         bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
+
   // Atualizar as conchas
   update() {
     // Mover as conchas e atualizar animações
