@@ -2,10 +2,28 @@
  * Interface de usuário do jogo
  */
 
-const UIManager = {
-  // Atualizar o contador de pontuação
+const UIManager = {  // Atualizar o contador de pontuação
   updateScore() {
     document.getElementById('score').innerText = "Conchas: " + Game.score;
+  },
+  
+  // Atualizar o contador da carteira
+  async updateWallet() {
+    try {
+      const walletShells = await DatabaseManager.getWalletShells();
+      const walletElement = document.getElementById('wallet-value');
+      if (walletElement) {
+        walletElement.textContent = walletShells;
+      }
+    } catch (error) {
+      console.error('Error updating wallet display:', error);
+      // Fallback para localStorage
+      const fallbackShells = localStorage.getItem('walletShells') || '0';
+      const walletElement = document.getElementById('wallet-value');
+      if (walletElement) {
+        walletElement.textContent = fallbackShells;
+      }
+    }
   },
   
   // Atualizar o indicador dia/noite
@@ -40,8 +58,7 @@ const UIManager = {
       indicator.style.animation = 'none';
       indicator.style.textShadow = '1px 2px 4px #333, 0 0 10px #1e90ff';
     }
-  },
-  // Mostrar a tela de game over
+  },  // Mostrar a tela de game over
   async showGameOver(message) {
     const currentScore = Game.score;
     let bestScore = 0;
@@ -59,6 +76,15 @@ const UIManager = {
         // Atualizar o best score na tela inicial também
         await this.updateBestScoreDisplay();
       }
+      
+      // Adicionar conchinhas coletadas à carteira
+      if (currentScore > 0) {
+        const newWalletTotal = await DatabaseManager.addToWallet(currentScore);        console.log('Added', currentScore, 'shells to wallet. New total:', newWalletTotal);
+        // Atualizar a exibição da carteira
+        await this.updateWallet();
+        await this.updateWalletDisplay();
+      }
+      
     } catch (error) {
       console.error('Error checking/saving best score:', error);
       // Fallback para localStorage
@@ -68,10 +94,18 @@ const UIManager = {
         localStorage.setItem('bestScore', currentScore.toString());
         await this.updateBestScoreDisplay();
       }
+      
+      // Fallback para carteira
+      if (currentScore > 0) {        const currentWallet = parseInt(localStorage.getItem('walletShells') || '0');
+        localStorage.setItem('walletShells', (currentWallet + currentScore).toString());
+        await this.updateWallet();
+        await this.updateWalletDisplay();
+      }
     }
     
     document.getElementById('finalmsg').innerText =
-      (message ? message+"\n":"") + `Você coletou ${Game.score} conchinha${Game.score==1?'':'s'}!`;
+      (message ? message+"\n":"") + `Você coletou ${Game.score} conchinha${Game.score==1?'':'s'}!` +
+      (currentScore > 0 ? `\n+${currentScore} conchinhas adicionadas à carteira!` : '');
     
     // Mostrar indicador de novo recorde se aplicável
     const newRecordElement = document.getElementById('new-record');
@@ -207,19 +241,34 @@ const UIManager = {
         }
       }, 150);
     };
-    
-    // Iniciar carregamento dos sprites para a pré-visualização
+      // Iniciar carregamento dos sprites para a pré-visualização
     loadPreviewSprite(1);
-  },    // Inicializar a UI
+  },
+  
+  // Inicializar a UI
   async init() {
     // Configurar eventos de UI - usando funções de seta para preservar o contexto 'this'
     document.getElementById('restart-btn').addEventListener('click', () => Game.restart());
     document.getElementById('start-btn').addEventListener('click', () => Game.startFromMenu());
-      // Inicializar a animação do personagem na tela inicial
+    document.getElementById('shop-btn').addEventListener('click', () => this.showShop());
+    document.getElementById('back-to-menu-btn').addEventListener('click', () => this.hideShop());
+    
+    // Configurar eventos da loja
+    document.getElementById('buy-luck').addEventListener('click', () => this.buyItem('luck', 100));
+    document.getElementById('buy-energy').addEventListener('click', () => this.buyItem('energy', 150));
+    document.getElementById('buy-shield').addEventListener('click', () => this.buyItem('shield', 200));
+    
+    // Inicializar a animação do personagem na tela inicial
     this.preloadCharacterAnimation();
     
     // Carregar e exibir o best score
     await this.updateBestScoreDisplay();
+    
+    // Carregar e exibir a carteira
+    await this.updateWallet();
+    
+    // Atualizar carteira na tela inicial
+    await this.updateWalletDisplay();
   },
     // Atualizar a exibição do melhor score
   async updateBestScoreDisplay() {
@@ -240,5 +289,117 @@ const UIManager = {
       }
       console.log('Using fallback score:', fallbackScore);
     }
+  },
+  
+  // Atualizar a exibição da carteira na tela inicial
+  async updateWalletDisplay() {
+    try {
+      const walletShells = await DatabaseManager.getWalletShells();
+      const walletDisplayElement = document.getElementById('wallet-display-value');
+      if (walletDisplayElement) {
+        walletDisplayElement.textContent = walletShells;
+      }
+      
+      // Também atualizar na loja se estiver visível
+      const shopWalletElement = document.getElementById('shop-wallet-value');
+      if (shopWalletElement) {
+        shopWalletElement.textContent = walletShells;
+      }
+      
+      // Atualizar botões da loja baseado na quantidade de conchinhas
+      this.updateShopButtons(walletShells);
+      
+    } catch (error) {
+      console.error('Error updating wallet display:', error);
+      const fallbackShells = localStorage.getItem('walletShells') || '0';
+      const walletDisplayElement = document.getElementById('wallet-display-value');
+      if (walletDisplayElement) {
+        walletDisplayElement.textContent = fallbackShells;
+      }
+    }
+  },
+  
+  // Mostrar a loja
+  async showShop() {
+    document.getElementById('startscreen').style.display = 'none';
+    document.getElementById('shop-screen').style.display = 'flex';
+    await this.updateWalletDisplay();
+  },
+  
+  // Esconder a loja
+  hideShop() {
+    document.getElementById('shop-screen').style.display = 'none';
+    document.getElementById('startscreen').style.display = 'flex';
+  },
+  
+  // Atualizar botões da loja baseado na quantidade de conchinhas
+  updateShopButtons(walletAmount) {
+    const luckBtn = document.getElementById('buy-luck');
+    const energyBtn = document.getElementById('buy-energy');
+    const shieldBtn = document.getElementById('buy-shield');
+    
+    // Desabilitar botões se não tiver conchinhas suficientes
+    luckBtn.disabled = walletAmount < 100;
+    energyBtn.disabled = walletAmount < 150;
+    shieldBtn.disabled = walletAmount < 200;
+    
+    // Mudar texto se já comprado (implementar depois se necessário)
+    // Por enquanto, permitir compras múltiplas
+  },
+  
+  // Comprar item da loja
+  async buyItem(itemType, price) {
+    try {
+      const currentWallet = await DatabaseManager.getWalletShells();
+      
+      if (currentWallet < price) {
+        alert('Conchinhas insuficientes! 🐚');
+        return;
+      }
+      
+      // Gastar conchinhas
+      await DatabaseManager.spendFromWallet(price);
+      
+      // Aplicar efeito do item (implementar depois)
+      this.applyItemEffect(itemType);
+      
+      // Atualizar displays
+      await this.updateWalletDisplay();
+      await this.updateWallet();
+      
+      // Mostrar confirmação
+      const itemNames = {
+        luck: 'Trevo da Sorte 🍀',
+        energy: 'Energia Extra ⚡',
+        shield: 'Escudo Inicial 🛡️'
+      };
+      
+      alert(`${itemNames[itemType]} comprado com sucesso!`);
+      
+    } catch (error) {
+      console.error('Error buying item:', error);
+      alert('Erro ao comprar item. Tente novamente.');
+    }
+  },
+  
+  // Aplicar efeito do item comprado
+  applyItemEffect(itemType) {
+    // Salvar no localStorage por enquanto (pode ser movido para database depois)
+    const currentEffects = JSON.parse(localStorage.getItem('purchasedEffects') || '{}');
+    
+    switch(itemType) {
+      case 'luck':
+        currentEffects.luck = (currentEffects.luck || 0) + 1;
+        break;
+      case 'energy':
+        currentEffects.energy = (currentEffects.energy || 0) + 1;
+        break;
+      case 'shield':
+        currentEffects.shield = (currentEffects.shield || 0) + 1;
+        break;
+    }
+    
+    localStorage.setItem('purchasedEffects', JSON.stringify(currentEffects));
+    console.log('Applied effect:', itemType, 'Current effects:', currentEffects);
   }
 };

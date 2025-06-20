@@ -82,22 +82,42 @@ async initNativeSQLite() {
 - Funciona offline (dados ficam no dispositivo)
 - Não é perdido quando o app é fechado
 
-### 2. **Exibição do Best Score**
+### 2. **Sistema de Carteira de Conchinhas** 🆕
+- Todas as conchinhas coletadas durante o jogo são adicionadas à carteira
+- Carteira persistente (não é perdida quando o app é fechado)
+- Exibida na tela inicial e durante o jogo
+- Sistema de loja para gastar as conchinhas
+
+### 3. **Loja de Itens** 🆕
+- **Trevo da Sorte** (100 🐚): Aumenta chance de power-ups aparecerem
+- **Energia Extra** (150 🐚): Pulos mais altos e duradouros  
+- **Escudo Inicial** (200 🐚): Comece cada jogo com escudo ativo
+- Interface visual intuitiva com preços e descrições
+
+### 4. **Exibição do Best Score**
 - Mostrado na tela inicial do jogo
 - Atualizado automaticamente quando um novo recorde é alcançado
 
-### 3. **Indicador de Novo Recorde**
+### 5. **Indicador de Novo Recorde**
 - Quando o jogador faz um novo recorde, uma mensagem especial aparece
 - Animação visual para destacar a conquista
 
-### 4. **Estrutura do Banco de Dados**
+### 6. **Estrutura do Banco de Dados**
 
 ```sql
+-- Tabela de scores
 CREATE TABLE scores (
   id INTEGER PRIMARY KEY,
   best_score INTEGER NOT NULL,
   date_achieved TEXT NOT NULL,
   game_version TEXT DEFAULT '1.0'
+);
+
+-- Tabela da carteira (NOVA)
+CREATE TABLE wallet (
+  id INTEGER PRIMARY KEY,
+  total_shells INTEGER NOT NULL DEFAULT 0,
+  last_updated TEXT NOT NULL
 );
 ```
 

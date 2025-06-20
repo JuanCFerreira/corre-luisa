@@ -80,13 +80,14 @@ const Game = {
       }
     });
   },
-    // Iniciar o jogo a partir do menu
+  // Iniciar o jogo a partir do menu
   startFromMenu() {
     // Esconder a tela de início
     document.getElementById('startscreen').style.display = 'none';
     
     // Mostrar os elementos do jogo
     document.getElementById('score').style.display = '';
+    document.getElementById('wallet').style.display = '';
     document.getElementById('day-night-indicator').style.display = '';
     
     // Iniciar a música de fundo agora que houve interação do usuário
