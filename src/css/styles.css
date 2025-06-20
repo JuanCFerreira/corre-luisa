@@ -141,63 +141,43 @@ canvas {
   left: 0; top: 0; width: 100%; height: 100%;
   background-color: #67d5ff;
   background-position: center;
-  background-size: contain;
+  background-size: cover;
   background-repeat: no-repeat;
   background-image: url(../sprites/main-menu/background.jpg);
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
   color: #fff;
-  font-family: Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
   font-size: 2em;
   text-align: center;
   z-index: 4;
+  display: flex;
+  flex-direction: column;
 }
 
-#startscreen h1 {
-  font-size: 2em;
-  margin-bottom: 30px;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
-  animation: pulse 1.5s infinite;
-}
 
-#startscreen button {
-  margin-top: 30px;
-  font-size: 1em;
-  padding: 15px 40px;
-  border: none;
-  border-radius: 15px;
-  background: #ffdb58;
-  color: #444;
-  font-weight: bold;
-  box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
 
-#startscreen button:hover {
-  transform: scale(1.05);
-  box-shadow: 4px 4px 12px rgba(0,0,0,0.5);
-}
-
-#startscreen .character-preview {
-  width: 180px;
-  height: 180px;
-  margin: 20px 0;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  animation: float 3s ease-in-out infinite;
+/* Container para informações superiores direitas */
+.top-right-info {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
 }
 
 /* Best Score Display */
 #best-score {
-  font-size: 0.6em;
-  color: #ffdb58;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
-  margin: 15px 0;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.3);
-  border-radius: 10px;
-  border: 2px solid #ffdb58;
+  font-size: 0.7em;
+  color: #fff;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 165, 0, 0.9));  border-radius: 15px;
+  border: 3px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  backdrop-filter: blur(10px);
+  min-width: 180px;
+  text-align: center;
 }
 
 #best-score-value {
@@ -268,14 +248,17 @@ canvas {
 
 /* Exibição da carteira na tela inicial */
 #wallet-display {
-  font-size: 0.6em;
-  color: #87ceeb;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
-  margin: 10px 0;
-  padding: 8px 16px;
-  background: rgba(0,0,0,0.3);
-  border-radius: 8px;
-  border: 2px solid #87ceeb;
+  font-size: 0.7em;
+  color: #fff;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(30, 144, 255, 0.9), rgba(135, 206, 235, 0.9));
+  border-radius: 15px;
+  border: 3px solid #87ceeb;
+  box-shadow: 0 4px 15px rgba(135, 206, 235, 0.4);
+  backdrop-filter: blur(10px);
+  min-width: 180px;
+  text-align: center;
 }
 
 #wallet-display-value {
@@ -283,31 +266,45 @@ canvas {
   color: #ffdb58;
 }
 
+/* Container para botões inferiores direitos */
+.bottom-right-buttons {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: flex-end;
+}
+
 /* Botões do menu */
 .menu-buttons {
   display: flex;
+  flex-direction: column;
   gap: 15px;
-  justify-content: center;
-  margin-top: 20px;
+  align-items: flex-end;
 }
 
 .menu-buttons button {
-  padding: 12px 24px;
+  padding: 15px 30px;
   font-size: 0.8em;
   font-weight: bold;
   color: #fff;
-  background: linear-gradient(45deg, #1e90ff, #87ceeb);
+  background: linear-gradient(135deg, #ff6b35, #ff9500);
   border: none;
-  border-radius: 10px;
+  border-radius: 20px;  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
   cursor: pointer;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  min-width: 140px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
 }
 
 .menu-buttons button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6);
+  background: linear-gradient(135deg, #ff8a50, #ffb347);
 }
 
 /* Tela da loja */
@@ -565,14 +562,59 @@ canvas {
 }
 
 /* Animações */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
-  100% { transform: translateY(0px); }
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(255, 215, 0, 0.8);
+  }
+}
+
+/* Aplicando animações */
+.top-right-info {
+  animation: slideInRight 0.8s ease-out;
+}
+
+.bottom-right-buttons {
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+#best-score {
+  animation: glow 2s infinite;
+}
+
+.menu-buttons button:active {
+  transform: translateY(-1px) scale(0.98);
 }
