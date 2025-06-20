@@ -53,8 +53,22 @@ const DatabaseManager = {
               )`,
               [],
               () => {
-                // Inserir registros iniciais se não existirem
-                this.initializeDefaultRecords(tx, resolve, reject);
+                // Criar tabela de itens de poder
+                tx.executeSql(
+                  `CREATE TABLE IF NOT EXISTS power_items (
+                    id INTEGER PRIMARY KEY,
+                    shield_count INTEGER NOT NULL DEFAULT 0,
+                    magnet_count INTEGER NOT NULL DEFAULT 0,
+                    luck_level INTEGER NOT NULL DEFAULT 0,
+                    last_updated TEXT NOT NULL
+                  )`,
+                  [],
+                  () => {
+                    // Inserir registros iniciais se não existirem
+                    this.initializeDefaultRecords(tx, resolve, reject);
+                  },
+                  (tx, error) => reject(error)
+                );
               },
               (tx, error) => reject(error)
             );
@@ -64,8 +78,7 @@ const DatabaseManager = {
       });
     });
   },
-  
-  // Inicializar registros padrão no Web SQL
+    // Inicializar registros padrão no Web SQL
   initializeDefaultRecords(tx, resolve, reject) {
     // Verificar e inserir registro de scores
     tx.executeSql(
@@ -101,6 +114,31 @@ const DatabaseManager = {
           tx.executeSql(
             'INSERT INTO wallet (total_shells, last_updated) VALUES (?, ?)',
             [0, new Date().toISOString()],
+            () => {
+              // Verificar e inserir registro de itens de poder
+              this.initializePowerItemsRecord(tx, resolve, reject);
+            },
+            (tx, error) => reject(error)
+          );
+        } else {
+          // Verificar e inserir registro de itens de poder
+          this.initializePowerItemsRecord(tx, resolve, reject);
+        }
+      },
+      (tx, error) => reject(error)
+    );
+  },
+  
+  // Inicializar registro de itens de poder no Web SQL
+  initializePowerItemsRecord(tx, resolve, reject) {
+    tx.executeSql(
+      'SELECT COUNT(*) as count FROM power_items',
+      [],
+      (tx, result) => {
+        if (result.rows.item(0).count === 0) {
+          tx.executeSql(
+            'INSERT INTO power_items (shield_count, magnet_count, luck_level, last_updated) VALUES (?, ?, ?, ?)',
+            [0, 0, 0, new Date().toISOString()],
             () => resolve(),
             (tx, error) => reject(error)
           );
@@ -120,7 +158,7 @@ const DatabaseManager = {
       
       request.onsuccess = (event) => {
         this.db = event.target.result;          // Verificar se a object store existe após abrir
-          if (!this.db.objectStoreNames.contains('scores') || !this.db.objectStoreNames.contains('wallet')) {
+          if (!this.db.objectStoreNames.contains('scores') || !this.db.objectStoreNames.contains('wallet') || !this.db.objectStoreNames.contains('power_items')) {
             // Se não existir, fechar e reabrir com versão maior para forçar upgrade
             this.db.close();
             const upgradeRequest = indexedDB.open('CorrerLuisaDB', 2);
@@ -134,6 +172,12 @@ const DatabaseManager = {
               if (!upgradeDb.objectStoreNames.contains('wallet')) {
                 const walletStore = upgradeDb.createObjectStore('wallet', { keyPath: 'id', autoIncrement: true });
                 walletStore.createIndex('total_shells', 'total_shells', { unique: false });
+              }
+              if (!upgradeDb.objectStoreNames.contains('power_items')) {
+                const powerItemStore = upgradeDb.createObjectStore('power_items', { keyPath: 'id', autoIncrement: true });
+                powerItemStore.createIndex('shield_count', 'shield_count', { unique: false });
+                powerItemStore.createIndex('magnet_count', 'magnet_count', { unique: false });
+                powerItemStore.createIndex('luck_level', 'luck_level', { unique: false });
               }
             };
             
@@ -163,15 +207,24 @@ const DatabaseManager = {
           const walletStore = db.createObjectStore('wallet', { keyPath: 'id', autoIncrement: true });
           walletStore.createIndex('total_shells', 'total_shells', { unique: false });
         }
+        
+        // Criar object store de itens de poder
+        if (!db.objectStoreNames.contains('power_items')) {
+          const powerItemStore = db.createObjectStore('power_items', { keyPath: 'id', autoIncrement: true });
+          powerItemStore.createIndex('shield_count', 'shield_count', { unique: false });
+          powerItemStore.createIndex('magnet_count', 'magnet_count', { unique: false });
+          powerItemStore.createIndex('luck_level', 'luck_level', { unique: false });
+        }
       };
     });
   },
     // Garantir que existem registros iniciais no IndexedDB
   async ensureInitialRecords() {
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction(['scores', 'wallet'], 'readwrite');
+      const transaction = this.db.transaction(['scores', 'wallet', 'power_items'], 'readwrite');
       const scoreStore = transaction.objectStore('scores');
       const walletStore = transaction.objectStore('wallet');
+      const powerItemStore = transaction.objectStore('power_items');
       
       // Verificar e inserir registro de scores
       const scoreCountRequest = scoreStore.count();
@@ -193,13 +246,26 @@ const DatabaseManager = {
               last_updated: new Date().toISOString()
             });
           }
-          resolve();
+          
+          // Verificar e inserir registro de itens de poder
+          const powerItemCountRequest = powerItemStore.count();
+          powerItemCountRequest.onsuccess = () => {
+            if (powerItemCountRequest.result === 0) {
+              powerItemStore.add({
+                shield_count: 0,
+                magnet_count: 0,
+                luck_level: 0,
+                last_updated: new Date().toISOString()
+              });
+            }
+            resolve();
+          };
+          walletCountRequest.onerror = () => reject(walletCountRequest.error);
         };
-        walletCountRequest.onerror = () => reject(walletCountRequest.error);
+        scoreCountRequest.onerror = () => reject(scoreCountRequest.error);
+        
+        transaction.onerror = () => reject(transaction.error);
       };
-      scoreCountRequest.onerror = () => reject(scoreCountRequest.error);
-      
-      transaction.onerror = () => reject(transaction.error);
     });
   },
     // Obter o melhor score
@@ -694,5 +760,163 @@ const DatabaseManager = {
       console.error('Error spending from wallet:', error);
       throw error;
     }
-  }
+  },
+  
+  // === MÉTODOS DE ITENS DE PODER ===
+  
+  // Obter itens de poder comprados
+  async getPowerItems() {
+    if (this.useLocalStorageFallback) {
+      try {
+        const items = localStorage.getItem('powerItems');
+        return items ? JSON.parse(items) : { shield: 0, magnet: 0, luck: 0 };
+      } catch (error) {
+        console.error('Error getting power items from localStorage:', error);
+        return { shield: 0, magnet: 0, luck: 0 };
+      }
+    }
+
+    try {
+      if (typeof openDatabase !== 'undefined' && this.db) {
+        // Web SQL
+        return new Promise((resolve, reject) => {
+          this.db.transaction((tx) => {
+            tx.executeSql(
+              'SELECT * FROM power_items WHERE id = 1',
+              [],
+              (tx, result) => {
+                if (result.rows.length > 0) {
+                  const row = result.rows.item(0);
+                  resolve({
+                    shield: row.shield_count || 0,
+                    magnet: row.magnet_count || 0,
+                    luck: row.luck_level || 0
+                  });
+                } else {
+                  resolve({ shield: 0, magnet: 0, luck: 0 });
+                }
+              },
+              (tx, error) => reject(error)
+            );
+          });
+        });
+      } else if (this.db) {
+        // IndexedDB
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction(['power_items'], 'readonly');
+          const store = transaction.objectStore('power_items');
+          const request = store.get(1);
+          
+          request.onsuccess = () => {
+            if (request.result) {
+              resolve({
+                shield: request.result.shield_count || 0,
+                magnet: request.result.magnet_count || 0,
+                luck: request.result.luck_level || 0
+              });
+            } else {
+              resolve({ shield: 0, magnet: 0, luck: 0 });
+            }
+          };
+          
+          request.onerror = () => reject(request.error);
+        });
+      }
+    } catch (error) {
+      console.error('Error getting power items:', error);
+      // Fallback para localStorage
+      try {
+        const items = localStorage.getItem('powerItems');
+        return items ? JSON.parse(items) : { shield: 0, magnet: 0, luck: 0 };
+      } catch (fallbackError) {
+        return { shield: 0, magnet: 0, luck: 0 };
+      }
+    }
+  },
+
+  // Atualizar itens de poder
+  async updatePowerItems(shield, magnet, luck) {
+    if (this.useLocalStorageFallback) {
+      try {
+        const items = { shield, magnet, luck };
+        localStorage.setItem('powerItems', JSON.stringify(items));
+        return true;
+      } catch (error) {
+        console.error('Error updating power items in localStorage:', error);
+        return false;
+      }
+    }
+
+    try {
+      if (typeof openDatabase !== 'undefined' && this.db) {
+        // Web SQL
+        return new Promise((resolve, reject) => {
+          this.db.transaction((tx) => {
+            tx.executeSql(
+              `INSERT OR REPLACE INTO power_items (id, shield_count, magnet_count, luck_level, last_updated) 
+               VALUES (1, ?, ?, ?, ?)`,
+              [shield, magnet, luck, new Date().toISOString()],
+              () => resolve(true),
+              (tx, error) => reject(error)
+            );
+          });
+        });
+      } else if (this.db) {
+        // IndexedDB
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction(['power_items'], 'readwrite');
+          const store = transaction.objectStore('power_items');
+          const request = store.put({
+            id: 1,
+            shield_count: shield,
+            magnet_count: magnet,
+            luck_level: luck,
+            last_updated: new Date().toISOString()
+          });
+          
+          request.onsuccess = () => resolve(true);
+          request.onerror = () => reject(request.error);
+        });
+      }
+    } catch (error) {
+      console.error('Error updating power items:', error);
+      // Fallback para localStorage
+      try {
+        const items = { shield, magnet, luck };
+        localStorage.setItem('powerItems', JSON.stringify(items));
+        return true;
+      } catch (fallbackError) {
+        return false;
+      }
+    }
+  },
+
+  // Usar um item de poder (diminuir a quantidade)
+  async usePowerItem(itemType) {
+    try {
+      const currentItems = await this.getPowerItems();
+      if (currentItems[itemType] > 0) {
+        currentItems[itemType]--;
+        await this.updatePowerItems(currentItems.shield, currentItems.magnet, currentItems.luck);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error using power item:', error);
+      return false;
+    }
+  },
+
+  // Adicionar item de poder (após compra)
+  async addPowerItem(itemType, quantity = 1) {
+    try {
+      const currentItems = await this.getPowerItems();
+      currentItems[itemType] += quantity;
+      await this.updatePowerItems(currentItems.shield, currentItems.magnet, currentItems.luck);
+      return true;
+    } catch (error) {
+      console.error('Error adding power item:', error);
+      return false;
+    }
+  },
 };

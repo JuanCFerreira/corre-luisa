@@ -31,3 +31,10 @@ const POWERUP_TYPES = {
   MAGNET: 0,
   SHIELD: 1
 };
+
+// Tipos de itens da loja
+const SHOP_ITEMS = {
+  INITIAL_SHIELD: 'initial_shield',
+  INITIAL_MAGNET: 'initial_magnet',
+  LUCK: 'luck'
+};

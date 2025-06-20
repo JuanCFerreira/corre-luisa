@@ -12,12 +12,14 @@ const Game = {
   
   // Velocidade
   speed: 0,
-  
-  // Estado dos poderes
+    // Estado dos poderes
   magnetActive: false,
   magnetEndTime: 0,
   shieldActive: false,
   shieldEndTime: 0,
+  
+  // Poder inicial selecionado
+  selectedInitialPower: null,
   
   // Estado do ambiente
   isNightMode: false,
@@ -112,8 +114,7 @@ const Game = {
     ShellManager.init();
     ObstacleManager.init();
     PowerupManager.init();
-    Renderer.init();
-    // Reiniciar estados
+    Renderer.init();    // Reiniciar estados
     this.score = 0;
     this.speed = canvasUtils.w() * 0.009;
     this.started = true;
@@ -125,6 +126,10 @@ const Game = {
     AudioManager.stopAllLoopSounds();
     this.isNightMode = false;
     document.body.classList.remove('night-mode');
+    
+    // Aplicar poder inicial se selecionado
+    this.applyInitialPower();
+    
     UIManager.updateScore();
     UIManager.updateDayNightIndicator();
     UIManager.hideGameOver();
@@ -239,6 +244,44 @@ const Game = {
       if (this.speed > MAX_SPEED) {
         this.speed = MAX_SPEED;
       }
+    }
+  },
+  
+  // Aplicar poder inicial selecionado
+  applyInitialPower() {
+    if (this.selectedInitialPower) {
+      const currentTime = Date.now();
+      
+      switch (this.selectedInitialPower) {
+        case 'shield':
+          this.shieldActive = true;
+          this.shieldEndTime = currentTime + SHIELD_DURATION;
+          AudioManager.startLoopSound('shieldSound');
+          console.log('Escudo inicial ativado!');
+          break;
+          
+        case 'magnet':
+          this.magnetActive = true;
+          this.magnetEndTime = currentTime + MAGNET_DURATION;
+          AudioManager.startLoopSound('magnetSound');
+          console.log('Ímã inicial ativado!');
+          break;
+      }
+      
+      // Resetar para próximo jogo
+      this.selectedInitialPower = null;
+    }
+  },
+  
+  // Obter multiplicador de sorte baseado no nível de luck comprado
+  async getLuckMultiplier() {
+    try {
+      const powerItems = await DatabaseManager.getPowerItems();
+      // Cada nível de luck aumenta 20% a chance de aparecer power-ups
+      return 1 + (powerItems.luck * 0.2);
+    } catch (error) {
+      console.error('Error getting luck multiplier:', error);
+      return 1; // Valor padrão se houver erro
     }
   },
 };

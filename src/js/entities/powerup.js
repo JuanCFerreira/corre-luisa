@@ -31,11 +31,14 @@ const PowerupManager = {
       console.error('Failed to load shield sprite');
     };
   },
-  
   // Criar um novo item de poder
-  spawnPowerup() {
+  async spawnPowerup() {
     // Intervalo muito mais longo para os power-ups (bem mais raros)
-    const interval = Math.random() * (canvasUtils.w() * POWERUP_FREQUENCY_MAX) + canvasUtils.w() * POWERUP_FREQUENCY_MIN;
+    const baseInterval = Math.random() * (canvasUtils.w() * POWERUP_FREQUENCY_MAX) + canvasUtils.w() * POWERUP_FREQUENCY_MIN;
+    
+    // Aplicar multiplicador de sorte (diminui o intervalo)
+    const interval = await this.applyLuckMultiplier(baseInterval);
+    
     setTimeout(() => {
       if (!Game.gameover && isLandscape()) {
         // Tipo aleatório: 0 para imã, 1 para escudo
@@ -50,6 +53,18 @@ const PowerupManager = {
         this.spawnPowerup();
       }
     }, interval / Game.speed * 50); // Multiplicador muito maior para tornar os power-ups bem mais raros
+  },
+  
+  // Aplicar multiplicador de sorte ao intervalo
+  async applyLuckMultiplier(baseInterval) {
+    try {
+      const luckMultiplier = await Game.getLuckMultiplier();
+      // Quanto maior o multiplicador, menor o intervalo (mais frequente)
+      return baseInterval / luckMultiplier;
+    } catch (error) {
+      console.error('Error applying luck multiplier:', error);
+      return baseInterval;
+    }
   },
   
   // Atualizar os itens de poder

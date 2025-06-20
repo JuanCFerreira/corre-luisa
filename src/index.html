@@ -28,31 +28,46 @@
           <button id="start-btn">Começar!</button>
           <button id="shop-btn">Loja</button>
         </div>
-      </div>
-      <div id="shop-screen" style="display: none;">
-        <h2>🏪 Loja de Conchinhas</h2>
+      </div>      <div id="shop-screen" style="display: none;">
+        <h2>🏪 Loja de Poderes</h2>
         <div id="shop-wallet">Suas conchinhas: <span id="shop-wallet-value">0</span> 🐚</div>
         <div class="shop-items">
           <div class="shop-item">
-            <h3>🍀 Trevo da Sorte</h3>
-            <p>Aumenta a chance de power-ups aparecerem</p>
-            <div class="shop-price">Preço: 100 🐚</div>
-            <button id="buy-luck" class="shop-buy-btn">Comprar</button>
-          </div>
-          <div class="shop-item">
-            <h3>⚡ Energia Extra</h3>
-            <p>Pulos mais altos e duradouros</p>
-            <div class="shop-price">Preço: 150 🐚</div>
-            <button id="buy-energy" class="shop-buy-btn">Comprar</button>
-          </div>
-          <div class="shop-item">
             <h3>🛡️ Escudo Inicial</h3>
-            <p>Comece cada jogo com escudo ativo</p>
-            <div class="shop-price">Preço: 200 🐚</div>
+            <p>Comece o próximo jogo com escudo ativo</p>
+            <div class="shop-price">Preço: 150 🐚</div>
+            <div class="shop-quantity">Quantidade: <span id="shield-quantity">0</span></div>
             <button id="buy-shield" class="shop-buy-btn">Comprar</button>
+          </div>
+          <div class="shop-item">
+            <h3>🧲 Ímã Inicial</h3>
+            <p>Comece o próximo jogo com ímã ativo</p>
+            <div class="shop-price">Preço: 120 🐚</div>
+            <div class="shop-quantity">Quantidade: <span id="magnet-quantity">0</span></div>
+            <button id="buy-magnet" class="shop-buy-btn">Comprar</button>
+          </div>
+          <div class="shop-item">
+            <h3>🍀 Trevo da Sorte</h3>
+            <p>Aumenta a chance de power-ups aparecerem (permanente)</p>
+            <div class="shop-price">Preço: 200 🐚</div>
+            <div class="shop-quantity">Nível: <span id="luck-level">0</span></div>
+            <button id="buy-luck" class="shop-buy-btn">Comprar</button>
           </div>
         </div>
         <button id="back-to-menu-btn">Voltar ao Menu</button>
+      </div>
+
+      <!-- Tela de seleção de poderes antes do jogo -->
+      <div id="power-selection-screen" style="display: none;">
+        <h2>⚡ Seleção de Poderes</h2>
+        <p>Escolha um poder para usar neste jogo:</p>
+        <div class="power-selection-items" id="power-selection-items">
+          <!-- Itens serão adicionados dinamicamente -->
+        </div>
+        <div class="power-selection-buttons">
+          <button id="start-without-power">Começar sem poder</button>
+          <button id="start-with-selected-power" disabled>Começar com poder selecionado</button>
+        </div>
       </div>
       <canvas id="game"></canvas>
     </div>

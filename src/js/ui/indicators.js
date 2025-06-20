@@ -244,19 +244,25 @@ const UIManager = {  // Atualizar o contador de pontuação
       // Iniciar carregamento dos sprites para a pré-visualização
     loadPreviewSprite(1);
   },
-  
-  // Inicializar a UI
+    // Inicializar a UI
   async init() {
     // Configurar eventos de UI - usando funções de seta para preservar o contexto 'this'
     document.getElementById('restart-btn').addEventListener('click', () => Game.restart());
-    document.getElementById('start-btn').addEventListener('click', () => Game.startFromMenu());
+    document.getElementById('start-btn').addEventListener('click', () => this.showPowerSelection());
     document.getElementById('shop-btn').addEventListener('click', () => this.showShop());
     document.getElementById('back-to-menu-btn').addEventListener('click', () => this.hideShop());
     
-    // Configurar eventos da loja
-    document.getElementById('buy-luck').addEventListener('click', () => this.buyItem('luck', 100));
-    document.getElementById('buy-energy').addEventListener('click', () => this.buyItem('energy', 150));
-    document.getElementById('buy-shield').addEventListener('click', () => this.buyItem('shield', 200));
+    // Configurar eventos da loja (novos itens)
+    document.getElementById('buy-shield').addEventListener('click', () => this.buyItem('shield', 150));
+    document.getElementById('buy-magnet').addEventListener('click', () => this.buyItem('magnet', 120));
+    document.getElementById('buy-luck').addEventListener('click', () => this.buyItem('luck', 200));
+    
+    // Configurar eventos da tela de seleção de poderes
+    document.getElementById('start-without-power').addEventListener('click', () => {
+      this.hidePowerSelection();
+      Game.startFromMenu();
+    });
+    document.getElementById('start-with-selected-power').addEventListener('click', () => this.startWithSelectedPower());
     
     // Inicializar a animação do personagem na tela inicial
     this.preloadCharacterAnimation();
@@ -269,6 +275,9 @@ const UIManager = {  // Atualizar o contador de pontuação
     
     // Atualizar carteira na tela inicial
     await this.updateWalletDisplay();
+    
+    // Atualizar quantidades de itens na loja
+    await this.updateShopQuantities();
   },
     // Atualizar a exibição do melhor score
   async updateBestScoreDisplay() {
@@ -290,8 +299,7 @@ const UIManager = {  // Atualizar o contador de pontuação
       console.log('Using fallback score:', fallbackScore);
     }
   },
-  
-  // Atualizar a exibição da carteira na tela inicial
+    // Atualizar a exibição da carteira na tela inicial
   async updateWalletDisplay() {
     try {
       const walletShells = await DatabaseManager.getWalletShells();
@@ -316,6 +324,14 @@ const UIManager = {  // Atualizar o contador de pontuação
       if (walletDisplayElement) {
         walletDisplayElement.textContent = fallbackShells;
       }
+      
+      // Também atualizar na loja
+      const shopWalletElement = document.getElementById('shop-wallet-value');
+      if (shopWalletElement) {
+        shopWalletElement.textContent = fallbackShells;
+      }
+      
+      this.updateShopButtons(parseInt(fallbackShells));
     }
   },
   
@@ -332,22 +348,133 @@ const UIManager = {  // Atualizar o contador de pontuação
     document.getElementById('startscreen').style.display = 'flex';
   },
   
-  // Atualizar botões da loja baseado na quantidade de conchinhas
-  updateShopButtons(walletAmount) {
-    const luckBtn = document.getElementById('buy-luck');
-    const energyBtn = document.getElementById('buy-energy');
-    const shieldBtn = document.getElementById('buy-shield');
-    
-    // Desabilitar botões se não tiver conchinhas suficientes
-    luckBtn.disabled = walletAmount < 100;
-    energyBtn.disabled = walletAmount < 150;
-    shieldBtn.disabled = walletAmount < 200;
-    
-    // Mudar texto se já comprado (implementar depois se necessário)
-    // Por enquanto, permitir compras múltiplas
+  // Mostrar tela de seleção de poderes
+  async showPowerSelection() {
+    try {
+      const powerItems = await DatabaseManager.getPowerItems();
+      const hasAnyPower = powerItems.shield > 0 || powerItems.magnet > 0;
+      
+      if (!hasAnyPower) {
+        // Se não tem nenhum poder, iniciar diretamente
+        Game.startFromMenu();
+        return;
+      }
+      
+      // Esconder tela inicial e mostrar seleção de poderes
+      document.getElementById('startscreen').style.display = 'none';
+      document.getElementById('power-selection-screen').style.display = 'flex';
+      
+      // Preencher itens disponíveis
+      this.populatePowerSelection(powerItems);
+      
+    } catch (error) {
+      console.error('Error showing power selection:', error);
+      Game.startFromMenu(); // Fallback para iniciar sem poderes
+    }
   },
   
-  // Comprar item da loja
+  // Esconder tela de seleção de poderes
+  hidePowerSelection() {
+    document.getElementById('power-selection-screen').style.display = 'none';
+    document.getElementById('startscreen').style.display = 'flex';
+  },
+  
+  // Preencher opções de seleção de poderes
+  populatePowerSelection(powerItems) {
+    const container = document.getElementById('power-selection-items');
+    container.innerHTML = '';
+    
+    if (powerItems.shield > 0) {
+      const shieldItem = this.createPowerSelectionItem('shield', '🛡️ Escudo', powerItems.shield);
+      container.appendChild(shieldItem);
+    }
+    
+    if (powerItems.magnet > 0) {
+      const magnetItem = this.createPowerSelectionItem('magnet', '🧲 Ímã', powerItems.magnet);
+      container.appendChild(magnetItem);
+    }
+    
+    // Resetar seleção
+    this.selectedPower = null;
+    document.getElementById('start-with-selected-power').disabled = true;
+  },
+  
+  // Criar item de seleção de poder
+  createPowerSelectionItem(type, name, quantity) {
+    const item = document.createElement('div');
+    item.className = 'power-selection-item';
+    item.dataset.powerType = type;
+    
+    item.innerHTML = `
+      <h4>${name}</h4>
+      <div class="quantity">Quantidade: ${quantity}</div>
+    `;
+    
+    item.addEventListener('click', () => {
+      // Remover seleção anterior
+      document.querySelectorAll('.power-selection-item').forEach(el => el.classList.remove('selected'));
+      
+      // Adicionar seleção atual
+      item.classList.add('selected');
+      this.selectedPower = type;
+      
+      // Habilitar botão de iniciar com poder
+      document.getElementById('start-with-selected-power').disabled = false;
+    });
+    
+    return item;
+  },
+  
+  // Iniciar jogo com poder selecionado
+  async startWithSelectedPower() {
+    if (!this.selectedPower) return;
+    
+    try {
+      // Usar o item selecionado
+      const success = await DatabaseManager.usePowerItem(this.selectedPower);
+      
+      if (success) {
+        // Definir o poder inicial no jogo
+        Game.selectedInitialPower = this.selectedPower;
+        
+        // Esconder tela de seleção e iniciar jogo
+        this.hidePowerSelection();
+        Game.startFromMenu();
+      } else {
+        alert('Erro ao usar o item. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Error starting with selected power:', error);
+      alert('Erro ao usar o item. Tente novamente.');
+    }
+  },
+  
+  // Atualizar quantidades na loja
+  async updateShopQuantities() {
+    try {
+      const powerItems = await DatabaseManager.getPowerItems();
+      
+      document.getElementById('shield-quantity').textContent = powerItems.shield;
+      document.getElementById('magnet-quantity').textContent = powerItems.magnet;
+      document.getElementById('luck-level').textContent = powerItems.luck;
+      
+    } catch (error) {
+      console.error('Error updating shop quantities:', error);
+    }
+  },
+  
+  // Atualizar botões da loja baseado na quantidade de conchinhas
+  updateShopButtons(walletAmount) {
+    const shieldBtn = document.getElementById('buy-shield');
+    const magnetBtn = document.getElementById('buy-magnet');
+    const luckBtn = document.getElementById('buy-luck');
+    
+    // Desabilitar botões se não tiver conchinhas suficientes
+    shieldBtn.disabled = walletAmount < 150;
+    magnetBtn.disabled = walletAmount < 120;
+    luckBtn.disabled = walletAmount < 200;
+  },
+    // Comprar item da loja
   async buyItem(itemType, price) {
     try {
       const currentWallet = await DatabaseManager.getWalletShells();
@@ -360,46 +487,33 @@ const UIManager = {  // Atualizar o contador de pontuação
       // Gastar conchinhas
       await DatabaseManager.spendFromWallet(price);
       
-      // Aplicar efeito do item (implementar depois)
-      this.applyItemEffect(itemType);
+      // Adicionar item ao inventário
+      const success = await DatabaseManager.addPowerItem(itemType, 1);
       
-      // Atualizar displays
-      await this.updateWalletDisplay();
-      await this.updateWallet();
-      
-      // Mostrar confirmação
-      const itemNames = {
-        luck: 'Trevo da Sorte 🍀',
-        energy: 'Energia Extra ⚡',
-        shield: 'Escudo Inicial 🛡️'
-      };
-      
-      alert(`${itemNames[itemType]} comprado com sucesso!`);
+      if (success) {
+        // Atualizar displays
+        await this.updateWalletDisplay();
+        await this.updateWallet();
+        await this.updateShopQuantities();
+        
+        // Mostrar confirmação
+        const itemNames = {
+          shield: 'Escudo Inicial 🛡️',
+          magnet: 'Ímã Inicial 🧲',
+          luck: 'Trevo da Sorte 🍀'
+        };
+        
+        const message = itemType === 'luck' ? 
+          `${itemNames[itemType]} melhorado! Agora você tem mais sorte para encontrar power-ups.` :
+          `${itemNames[itemType]} adicionado ao seu inventário!`;
+        
+        alert(message);
+      } else {
+        alert('Erro ao adicionar item. Tente novamente.');
+      }
       
     } catch (error) {
-      console.error('Error buying item:', error);
-      alert('Erro ao comprar item. Tente novamente.');
+      console.error('Error buying item:', error);      alert('Erro ao comprar item. Tente novamente.');
     }
-  },
-  
-  // Aplicar efeito do item comprado
-  applyItemEffect(itemType) {
-    // Salvar no localStorage por enquanto (pode ser movido para database depois)
-    const currentEffects = JSON.parse(localStorage.getItem('purchasedEffects') || '{}');
-    
-    switch(itemType) {
-      case 'luck':
-        currentEffects.luck = (currentEffects.luck || 0) + 1;
-        break;
-      case 'energy':
-        currentEffects.energy = (currentEffects.energy || 0) + 1;
-        break;
-      case 'shield':
-        currentEffects.shield = (currentEffects.shield || 0) + 1;
-        break;
-    }
-    
-    localStorage.setItem('purchasedEffects', JSON.stringify(currentEffects));
-    console.log('Applied effect:', itemType, 'Current effects:', currentEffects);
   }
 };
