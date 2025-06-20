@@ -4,7 +4,7 @@
 
 const UIManager = {  // Atualizar o contador de pontuação
   updateScore() {
-    document.getElementById('score').innerText = "Conchas: " + Game.score;
+    document.getElementById('score').innerHTML = "<img width='30px' src='../sprites/coins/1.png'> " + Game.score;
   },
   
   // Atualizar o contador da carteira

@@ -292,7 +292,7 @@ const ShellManager = {
       if (rectsCollide(Girl, s)) {
         this.shells.splice(i, 1);
         Game.score++;
-        document.getElementById('score').innerText = "Conchas: " + Game.score;
+        document.getElementById('score').innerHTML = "<img width='30px' src='../sprites/coins/1.png'> " + Game.score;
         
         // Tocar som de concha
         AudioManager.playSound('coinSound');
