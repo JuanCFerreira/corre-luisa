@@ -3,7 +3,7 @@
  */
 
 // Esperar pelo carregamento do DOM
-document.addEventListener('DOMContentLoaded', () => {
-  // Inicializar o jogo
-  Game.init();
+document.addEventListener('DOMContentLoaded', async () => {
+  // Inicializar o jogo (agora assíncrono para incluir o banco de dados)
+  await Game.init();
 });

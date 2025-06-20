@@ -88,10 +88,9 @@ const ObstacleManager = {
   checkCollisions() {
     for (let i = 0; i < this.obstacles.length; i++) {
       let obs = this.obstacles[i];
-      if (rectsCollide(Girl, obs)) {
-        // Se o escudo estiver ativo, não há colisão com obstáculos
+      if (rectsCollide(Girl, obs)) {        // Se o escudo estiver ativo, não há colisão com obstáculos
         if (!Game.shieldActive) {
-          Game.gameOver("Você tropeçou em uma pedra!");
+          Game.gameOverSync("Você tropeçou em uma pedra!");
           return true;
         }
       }

@@ -15,14 +15,14 @@
       <div id="score">Conchas: 0</div>
       <div id="day-night-indicator"></div>
       <button id="fullscreen-btn" aria-label="Tela cheia"></button>
-      <div id="gameover">
-        <div id="finalmsg"></div>
+      <div id="gameover">        <div id="finalmsg"></div>
+        <div id="new-record" style="display: none;">🏆 NOVO RECORDE! 🏆</div>
         <button id="restart-btn">Jogar novamente</button>
-      </div>
-      <div id="startscreen">
+      </div>      <div id="startscreen">
         <h1>Corre Luisa</h1>
         <div class="character-preview" id="character-preview"></div>
         <p>Ajude Luisa a fugir do jacaré e coletar conchas!</p>
+        <div id="best-score">Melhor Score: <span id="best-score-value">0</span> conchas</div>
         <button id="start-btn">Começar!</button>
       </div>
       <canvas id="game"></canvas>
@@ -50,10 +50,10 @@
     <source src="songs/effects/shield.mp3" type="audio/mpeg">
     Seu navegador não suporta o elemento de áudio.
   </audio>
-
   <!-- Scripts do jogo -->
   <script src="js/utils/constants.js"></script>
   <script src="js/utils/helpers.js"></script>
+  <script src="js/core/database.js"></script>
   <script src="js/core/audio.js"></script>
   <script src="js/core/screen.js"></script>
   <script src="js/entities/girl.js"></script>

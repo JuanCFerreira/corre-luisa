@@ -41,11 +41,49 @@ const UIManager = {
       indicator.style.textShadow = '1px 2px 4px #333, 0 0 10px #1e90ff';
     }
   },
-  
   // Mostrar a tela de game over
-  showGameOver(message) {
+  async showGameOver(message) {
+    const currentScore = Game.score;
+    let bestScore = 0;
+    let isNewRecord = false;
+    
+    try {
+      bestScore = await DatabaseManager.getBestScore();
+      console.log('Current best score:', bestScore, 'Current game score:', currentScore);
+      
+      // Verificar se é um novo recorde
+      if (currentScore > bestScore) {
+        isNewRecord = true;
+        await DatabaseManager.saveBestScore(currentScore);
+        console.log('New record saved:', currentScore);
+        // Atualizar o best score na tela inicial também
+        await this.updateBestScoreDisplay();
+      }
+    } catch (error) {
+      console.error('Error checking/saving best score:', error);
+      // Fallback para localStorage
+      const fallbackBestScore = parseInt(localStorage.getItem('bestScore') || '0');
+      if (currentScore > fallbackBestScore) {
+        isNewRecord = true;
+        localStorage.setItem('bestScore', currentScore.toString());
+        await this.updateBestScoreDisplay();
+      }
+    }
+    
     document.getElementById('finalmsg').innerText =
       (message ? message+"\n":"") + `Você coletou ${Game.score} conchinha${Game.score==1?'':'s'}!`;
+    
+    // Mostrar indicador de novo recorde se aplicável
+    const newRecordElement = document.getElementById('new-record');
+    if (newRecordElement) {
+      if (isNewRecord) {
+        newRecordElement.style.display = 'block';
+        newRecordElement.style.animation = 'pulse 1s infinite';
+      } else {
+        newRecordElement.style.display = 'none';
+      }
+    }
+    
     document.getElementById('gameover').style.display = 'flex';
   },
   
@@ -172,14 +210,35 @@ const UIManager = {
     
     // Iniciar carregamento dos sprites para a pré-visualização
     loadPreviewSprite(1);
-  },
-    // Inicializar a UI
-  init() {
+  },    // Inicializar a UI
+  async init() {
     // Configurar eventos de UI - usando funções de seta para preservar o contexto 'this'
     document.getElementById('restart-btn').addEventListener('click', () => Game.restart());
     document.getElementById('start-btn').addEventListener('click', () => Game.startFromMenu());
-    
-    // Inicializar a animação do personagem na tela inicial
+      // Inicializar a animação do personagem na tela inicial
     this.preloadCharacterAnimation();
+    
+    // Carregar e exibir o best score
+    await this.updateBestScoreDisplay();
+  },
+    // Atualizar a exibição do melhor score
+  async updateBestScoreDisplay() {
+    try {
+      const bestScore = await DatabaseManager.getBestScore();
+      const bestScoreElement = document.getElementById('best-score-value');
+      if (bestScoreElement) {
+        bestScoreElement.textContent = bestScore;
+      }
+      console.log('Best score display updated:', bestScore);
+    } catch (error) {
+      console.error('Error updating best score display:', error);
+      // Fallback para localStorage se houver erro
+      const fallbackScore = localStorage.getItem('bestScore') || '0';
+      const bestScoreElement = document.getElementById('best-score-value');
+      if (bestScoreElement) {
+        bestScoreElement.textContent = fallbackScore;
+      }
+      console.log('Using fallback score:', fallbackScore);
+    }
   }
 };

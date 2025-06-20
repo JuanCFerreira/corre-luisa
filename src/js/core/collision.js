@@ -26,10 +26,9 @@ const CollisionSystem = {
   
   // Verificar colisão específica com o jacaré
   checkJacareCollision() {
-    if (rectsCollide(Jacare, Girl)) {
-      // Se o escudo estiver ativo, não há colisão com o jacaré
+    if (rectsCollide(Jacare, Girl)) {      // Se o escudo estiver ativo, não há colisão com o jacaré
       if (!Game.shieldActive) {
-        Game.gameOver("O jacaré pegou você!");
+        Game.gameOverSync("O jacaré pegou você!");
         return true;
       }
     }

@@ -21,16 +21,18 @@ const Game = {
   
   // Estado do ambiente
   isNightMode: false,
-  
   // Inicializar o jogo
-  init() {
+  async init() {
+    // Inicializar banco de dados primeiro
+    await DatabaseManager.init();
+    
     // Configurar eventos de input
     this.setupControls();
     
     // Inicializar componentes
     ScreenManager.init();
     AudioManager.init();
-    UIManager.init();
+    await UIManager.init(); // Aguardar a inicialização da UI
     
     // Inicializar estados
     this.started = false;
@@ -205,11 +207,22 @@ const Game = {
     // Atualizar o indicador dia/noite após a mudança
     UIManager.updateDayNightIndicator();
   },
-  
   // Game over
-  gameOver(msg) {
+  async gameOver(msg) {
     this.gameover = true;
-    UIManager.showGameOver(msg);
+    await UIManager.showGameOver(msg);
+    
+    // Parar todos os efeitos sonoros de loop
+    AudioManager.stopAllLoopSounds();
+  },
+  
+  // Game over síncrono (para compatibilidade com código existente)
+  gameOverSync(msg) {
+    this.gameover = true;
+    // Usar setTimeout para não bloquear a execução
+    setTimeout(async () => {
+      await UIManager.showGameOver(msg);
+    }, 0);
     
     // Parar todos os efeitos sonoros de loop
     AudioManager.stopAllLoopSounds();
