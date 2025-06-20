@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -21,15 +22,15 @@
       </div>      <div id="startscreen">
         <!-- Informações no canto superior direito -->
         <div class="top-right-info">
-          <div id="best-score">Melhor Score: <span id="best-score-value">0</span> conchas</div>
-          <div id="wallet-display">Carteira: <span id="wallet-display-value">0</span> 🐚</div>
+          <div id="best-score"><i class="fa fa-trophy"></i> <span id="best-score-value">0</span></div>
+          <div id="wallet-display" style="padding-left: 50px"><img style="position: absolute;left: 15px;top: 9px;" width="30px" src="../sprites/coins/1.png"> <span id="wallet-display-value">0</span></div>
         </div>
         
         <!-- Botões no canto inferior direito -->
         <div class="bottom-right-buttons">
           <div class="menu-buttons">
-            <button id="start-btn">Começar!</button>
-            <button id="shop-btn">Loja</button>
+            <button id="shop-btn" style="background: linear-gradient(135deg, #1843f0, #3a6fd3);min-width:0"><i class="fa fa-shop"></i></button>
+            <button id="start-btn"><i class="fa fa-play"></i></button>
           </div>
         </div>
       </div><div id="shop-screen" style="display: none;">
