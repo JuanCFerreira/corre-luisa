@@ -68,7 +68,13 @@ canvas {
   font-family: Arial, sans-serif;
   font-size: 1.8em;
   color: #fff;
-  text-shadow: 1px 2px 4px #333, 0 0 10px #1e90ff;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 15px #ff6b35;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.9), rgba(255, 149, 0, 0.9));
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: 3px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.5);
+  backdrop-filter: blur(10px);
   z-index: 2;
 }
 
@@ -91,21 +97,24 @@ canvas {
 /* Indicador da carteira */
 #wallet {
   position: absolute;
-  top: 50px;
+  top: 70px;
   left: 20px;
   color: #fff;
-  font-size: 0.8em;
+  font-size: 0.9em;
   font-weight: bold;
-  text-shadow: 1px 2px 4px #333, 0 0 10px #1e90ff;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 2px solid #ffdb58;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 10px #20b2aa;
+  background: linear-gradient(135deg, rgba(32, 178, 170, 0.9), rgba(64, 224, 208, 0.9));
+  padding: 12px 18px;
+  border-radius: 20px;
+  border: 3px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(32, 178, 170, 0.5);
+  backdrop-filter: blur(10px);
   z-index: 3;
 }
 
 #wallet-value {
-  color: #ffdb58;
+  color: #ffd700;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
 }
 
 /* Tela de game over */
@@ -125,14 +134,25 @@ canvas {
 #gameover button {
   margin-top: 20px;
   font-size: 0.9em;
-  padding: 12px 28px;
+  padding: 15px 35px;
   border: none;
-  border-radius: 10px;
-  background: #ffdb58;
-  color: #444;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #ff6b35, #ff9500);
+  color: #fff;
   font-weight: bold;
-  box-shadow: 2px 2px 8px #222;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  border: 3px solid #ffd700;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
   cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#gameover button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.7);
+  background: linear-gradient(135deg, #ff8a50, #ffb347);
 }
 
 /* Tela inicial */
@@ -169,20 +189,21 @@ canvas {
 /* Best Score Display */
 #best-score {
   font-size: 0.7em;
-  color: #f2ff00;
-  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+  color: #fff;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 10px #ff6b35;
   padding: 12px 20px;
-  background: #242424;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.9), rgba(255, 149, 0, 0.9));
   border-radius: 15px;
   border: 3px solid #ffd700;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.5);
   backdrop-filter: blur(10px);
   text-align: center;
 }
 
 #best-score-value {
   font-weight: bold;
-  color: #fff;
+  color: #ffd700;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
 }
 
 /* New Record Indicator */
@@ -250,19 +271,20 @@ canvas {
 #wallet-display {
   font-size: 0.7em;
   color: #fff;
-  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 10px #20b2aa;
   padding: 12px 20px;
-  background: linear-gradient(135deg, rgba(30, 144, 255, 0.9), rgba(135, 206, 235, 0.9));
+  background: linear-gradient(135deg, rgba(32, 178, 170, 0.9), rgba(64, 224, 208, 0.9));
   border-radius: 15px;
-  border: 3px solid #87ceeb;
-  box-shadow: 0 4px 15px rgba(135, 206, 235, 0.4);
+  border: 3px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(32, 178, 170, 0.5);
   backdrop-filter: blur(10px);
   text-align: center;
 }
 
 #wallet-display-value {
   font-weight: bold;
-  color: #ffdb58;
+  color: #ffd700;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
 }
 
 /* Container para botões inferiores direitos */
@@ -291,18 +313,20 @@ canvas {
   color: #fff;
   background: linear-gradient(135deg, #ff6b35, #ff9500);
   border: none;
-  border-radius: 20px;  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+  border-radius: 25px;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 140px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid #ffd700;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
 }
 
 .menu-buttons button:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.7);
   background: linear-gradient(135deg, #ff8a50, #ffb347);
 }
 
@@ -332,15 +356,17 @@ canvas {
 }
 
 #shop-wallet {
-  color: #ffdb58;
+  color: #fff;
   font-size: 1em;
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 10px #20b2aa;
   margin-bottom: 30px;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.3);
-  border-radius: 10px;
-  border: 2px solid #ffdb58;
+  padding: 15px 25px;
+  background: linear-gradient(135deg, rgba(32, 178, 170, 0.9), rgba(64, 224, 208, 0.9));
+  border-radius: 20px;
+  border: 3px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(32, 178, 170, 0.5);
+  backdrop-filter: blur(10px);
 }
 
 .shop-items {
@@ -377,28 +403,38 @@ canvas {
 }
 
 .shop-price {
-  color: #ffdb58;
+  color: #ffd700;
   font-weight: bold;
   font-size: 0.8em;
   margin: 15px 0;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  padding: 5px 10px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .shop-buy-btn {
-  background: linear-gradient(45deg, #32cd32, #90ee90);
+  background: linear-gradient(135deg, #20b2aa, #40e0d0);
   color: #fff;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 15px;
   cursor: pointer;
   font-weight: bold;
   font-size: 0.7em;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  border: 2px solid #ffd700;
+  box-shadow: 0 4px 10px rgba(32, 178, 170, 0.4);
   transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .shop-buy-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(32, 178, 170, 0.6);
+  background: linear-gradient(135deg, #40e0d0, #7fffd4);
 }
 
 .shop-buy-btn:disabled {
@@ -408,29 +444,39 @@ canvas {
 }
 
 #back-to-menu-btn {
-  background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+  background: linear-gradient(135deg, #ff69b4, #ff1493);
   color: #fff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
+  padding: 15px 30px;
+  border-radius: 20px;
   cursor: pointer;
   font-weight: bold;
   font-size: 0.8em;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  border: 3px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.5);
   transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 #back-to-menu-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 105, 180, 0.7);
+  background: linear-gradient(135deg, #ff8fa3, #ff69b4);
 }
 
 /* Quantidade de itens na loja */
 .shop-quantity {
-  color: #87ceeb;
+  color: #40e0d0;
   font-weight: bold;
   font-size: 0.7em;
   margin: 10px 0;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  padding: 3px 8px;
+  background: rgba(64, 224, 208, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(64, 224, 208, 0.3);
 }
 
 /* Tela de seleção de poderes */
@@ -519,35 +565,47 @@ canvas {
 }
 
 .power-selection-buttons button {
-  padding: 12px 20px;
+  padding: 15px 25px;
   border: none;
-  border-radius: 10px;
+  border-radius: 20px;
   cursor: pointer;
   font-weight: bold;
   font-size: 0.8em;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
   transition: all 0.3s;
+  border: 3px solid #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 #start-without-power {
-  background: linear-gradient(45deg, #666, #888);
+  background: linear-gradient(135deg, #ff69b4, #ff1493);
   color: #fff;
 }
 
+#start-without-power:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 105, 180, 0.5);
+  background: linear-gradient(135deg, #ff8fa3, #ff69b4);
+}
+
 #start-with-selected-power {
-  background: linear-gradient(45deg, #32cd32, #90ee90);
+  background: linear-gradient(135deg, #20b2aa, #40e0d0);
   color: #fff;
+}
+
+#start-with-selected-power:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(32, 178, 170, 0.5);
+  background: linear-gradient(135deg, #40e0d0, #7fffd4);
 }
 
 #start-with-selected-power:disabled {
   background: #666;
   cursor: not-allowed;
   transform: none;
-}
-
-.power-selection-buttons button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 /* Responsividade */
