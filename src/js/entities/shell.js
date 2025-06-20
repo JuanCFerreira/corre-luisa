@@ -24,8 +24,7 @@ const ShellManager = {
       console.error('Failed to load shell sprite');
     };
   },
-  
-  // Criar uma nova concha
+    // Criar uma nova concha
   spawnShell() {
     const interval = Math.random() * (canvasUtils.w() * SHELL_FREQUENCY_MAX) + canvasUtils.w() * SHELL_FREQUENCY_MIN;
     setTimeout(() => {
@@ -39,8 +38,16 @@ const ShellManager = {
             x: canvasUtils.w() + canvasUtils.SHELL_SIZE(),
             y: canvasUtils.GROUND_Y() - canvasUtils.SHELL_SIZE() - Math.random() * (canvasUtils.h() * 0.15),
             w: canvasUtils.SHELL_SIZE(),
-            h: canvasUtils.SHELL_SIZE()
+            h: canvasUtils.SHELL_SIZE(),            // Propriedades para animação
+            baseY: 0, // Será definida após criação
+            bounceOffset: 0,
+            rotationOffset: 0, // Para o movimento de dança
+            rotationAmplitude: 0.2 + Math.random() * 0.3, // Amplitude da rotação (radianos) - entre 0.2 e 0.5
+            animationSpeed: 0.05 + Math.random() * 0.03, // Velocidade da animação (variação entre conchas)
+            bounceAmplitude: 3 + Math.random() * 4 // Amplitude do movimento vertical
           });
+          // Definir a posição Y base para a animação
+          this.shells[this.shells.length - 1].baseY = this.shells[this.shells.length - 1].y;
         }
         this.spawnShell();
       }
@@ -73,8 +80,7 @@ const ShellManager = {
         break;
     }
   },
-  
-  // Criar padrão de linha reta com conchas
+    // Criar padrão de linha reta com conchas
   createStraightLinePattern() {
     const shellCount = 5 + Math.floor(Math.random() * 3); // 5 a 7 conchas
     const baseY = canvasUtils.GROUND_Y() - canvasUtils.SHELL_SIZE() - Math.random() * (canvasUtils.h() * 0.15);
@@ -85,12 +91,17 @@ const ShellManager = {
         x: canvasUtils.w() + canvasUtils.SHELL_SIZE() + (spacing * i),
         y: baseY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE()
+        h: canvasUtils.SHELL_SIZE(),        // Propriedades para animação
+        baseY: baseY,
+        bounceOffset: 0,
+        rotationOffset: 0,
+        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        animationSpeed: 0.05 + Math.random() * 0.03,
+        bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
-  
-  // Criar padrão de arco com conchas
+    // Criar padrão de arco com conchas
   createArcPattern() {
     const shellCount = 5 + Math.floor(Math.random() * 4); // 5 a 8 conchas
     const baseX = canvasUtils.w() + canvasUtils.SHELL_SIZE();
@@ -99,17 +110,23 @@ const ShellManager = {
     
     for (let i = 0; i < shellCount; i++) {
       // Calcular posição em um arco semicircular
-      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)
+      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)      const shellY = centerY + Math.sin(angle) * radius;
       this.shells.push({
         x: baseX + Math.cos(angle) * radius,
-        y: centerY + Math.sin(angle) * radius,
+        y: shellY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE()
+        h: canvasUtils.SHELL_SIZE(),
+        // Propriedades para animação
+        baseY: shellY,
+        bounceOffset: 0,
+        rotationOffset: 0,
+        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        animationSpeed: 0.05 + Math.random() * 0.03,
+        bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
-  
-  // Criar padrão de arco invertido com conchas
+    // Criar padrão de arco invertido com conchas
   createInvertedArcPattern() {
     const shellCount = 5 + Math.floor(Math.random() * 4); // 5 a 8 conchas
     const baseX = canvasUtils.w() + canvasUtils.SHELL_SIZE();
@@ -118,12 +135,19 @@ const ShellManager = {
     
     for (let i = 0; i < shellCount; i++) {
       // Calcular posição em um arco semicircular invertido
-      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)
+      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)      const shellY = centerY - Math.sin(angle) * radius; // Invertendo o sinal para criar o arco invertido
       this.shells.push({
         x: baseX + Math.cos(angle) * radius,
-        y: centerY - Math.sin(angle) * radius, // Invertendo o sinal para criar o arco invertido
+        y: shellY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE()
+        h: canvasUtils.SHELL_SIZE(),
+        // Propriedades para animação
+        baseY: shellY,
+        bounceOffset: 0,
+        rotationOffset: 0,
+        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        animationSpeed: 0.05 + Math.random() * 0.03,
+        bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
@@ -155,16 +179,22 @@ const ShellManager = {
       {x: 2, y: 1}, // meio direito
       {x: 2, y: 2}  // base direito
     ];
-    
-    // Função para criar pontos de uma letra
+      // Função para criar pontos de uma letra
     const createLetterPoints = (letter, offsetX) => {
       for (let i = 0; i < letter.length; i++) {
-        const point = letter[i];
+        const point = letter[i];        const shellY = baseY + point.y * dotSpacing;
         this.shells.push({
           x: baseX + offsetX + point.x * dotSpacing,
-          y: baseY + point.y * dotSpacing,
+          y: shellY,
           w: canvasUtils.SHELL_SIZE(),
-          h: canvasUtils.SHELL_SIZE()
+          h: canvasUtils.SHELL_SIZE(),
+          // Propriedades para animação
+          baseY: shellY,
+          bounceOffset: 0,
+          rotationOffset: 0,
+          rotationAmplitude: 0.2 + Math.random() * 0.3,
+          animationSpeed: 0.05 + Math.random() * 0.03,
+          bounceAmplitude: 3 + Math.random() * 4
         });
       }
     };
@@ -173,46 +203,65 @@ const ShellManager = {
     createLetterPoints(L, 0);
     createLetterPoints(U, 3 * letterSpacing);
   },
-  
-  // Criar padrão em zig-zag
+    // Criar padrão em zig-zag
   createZigZagPattern() {
     const shellCount = 6 + Math.floor(Math.random() * 3); // 6 a 8 conchas
     const baseY = canvasUtils.GROUND_Y() - canvasUtils.SHELL_SIZE() - (canvasUtils.h() * 0.1);
     const spacing = canvasUtils.SHELL_SIZE() * 1.3; // Espaço horizontal entre as conchas
     const verticalOffset = canvasUtils.SHELL_SIZE() * 1.5; // Quantidade de deslocamento vertical
     
-    for (let i = 0; i < shellCount; i++) {
+    for (let i = 0; i < shellCount; i++) {      const shellY = baseY + ((i % 2 === 0) ? 0 : -verticalOffset); // Alterna entre duas alturas
       this.shells.push({
         x: canvasUtils.w() + canvasUtils.SHELL_SIZE() + (spacing * i),
-        y: baseY + ((i % 2 === 0) ? 0 : -verticalOffset), // Alterna entre duas alturas
+        y: shellY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE()
+        h: canvasUtils.SHELL_SIZE(),
+        // Propriedades para animação
+        baseY: shellY,
+        bounceOffset: 0,
+        rotationOffset: 0,
+        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        animationSpeed: 0.05 + Math.random() * 0.03,
+        bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
-  
-  // Criar padrão de linha diagonal
+    // Criar padrão de linha diagonal
   createDiagonalLinePattern() {
     const shellCount = 5 + Math.floor(Math.random() * 3); // 5 a 7 conchas
     const startY = canvasUtils.GROUND_Y() - canvasUtils.SHELL_SIZE() - (canvasUtils.h() * 0.05);
     const spacing = canvasUtils.SHELL_SIZE() * 1.3; // Espaço horizontal entre as conchas
     const slope = canvasUtils.SHELL_SIZE() * 1.2; // Inclinação da diagonal
     
-    for (let i = 0; i < shellCount; i++) {
+    for (let i = 0; i < shellCount; i++) {      const shellY = startY - (slope * i); // Subindo diagonalmente
       this.shells.push({
         x: canvasUtils.w() + canvasUtils.SHELL_SIZE() + (spacing * i),
-        y: startY - (slope * i), // Subindo diagonalmente
+        y: shellY,
         w: canvasUtils.SHELL_SIZE(),
-        h: canvasUtils.SHELL_SIZE()
+        h: canvasUtils.SHELL_SIZE(),
+        // Propriedades para animação
+        baseY: shellY,
+        bounceOffset: 0,
+        rotationOffset: 0,
+        rotationAmplitude: 0.2 + Math.random() * 0.3,
+        animationSpeed: 0.05 + Math.random() * 0.03,
+        bounceAmplitude: 3 + Math.random() * 4
       });
     }
   },
-  
   // Atualizar as conchas
   update() {
-    // Mover as conchas
+    // Mover as conchas e atualizar animações
     for (let s of this.shells) {
       s.x -= Game.speed;
+      
+      // Atualizar animação de bounce (movimento vertical suave)
+      s.bounceOffset += s.animationSpeed;
+      s.y = s.baseY + Math.sin(s.bounceOffset) * s.bounceAmplitude;
+      
+      // Atualizar movimento de dança (oscilação de rotação)
+      s.rotationOffset += s.animationSpeed * 1.2; // Velocidade ligeiramente diferente para variação
+      s.rotation = Math.sin(s.rotationOffset) * s.rotationAmplitude; // Oscila entre -amplitude e +amplitude
     }
     
     // Remover conchas que saíram da tela
@@ -230,6 +279,8 @@ const ShellManager = {
         if (distance < canvasUtils.w() * 0.3) { // Distância de atração: 30% da largura da tela
           s.x += dx * 0.07; // Velocidade de atração
           s.y += dy * 0.07;
+          // Atualizar posição base para manter a animação suave durante a atração
+          s.baseY += dy * 0.07;
         }
       }
     }
@@ -256,11 +307,13 @@ const ShellManager = {
         Game.increaseSpeed();
       }
     }
-  },
-    // Desenhar uma concha
+  },    // Desenhar uma concha
   drawShell(ctx, shell) {
     ctx.save();
     ctx.translate(shell.x + shell.w/2, shell.y + shell.h/2);
+    
+    // Aplicar rotação suave
+    ctx.rotate(shell.rotation);
     
     // Usar sprite se carregado, senão usar desenho original
     if (this.shellSprite && this.shellSprite.complete) {
