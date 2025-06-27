@@ -10,7 +10,13 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div id="phone-container">
+  <!-- Tela inicial de entrada -->
+  <div id="entry-screen" style="position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
+    <h1 style="font-size:2em;margin-bottom:1em;">Corre Luisa</h1>
+    <button id="enter-game-btn" style="font-size:1.2em;padding:1em 2em;border:none;border-radius:8px;background:linear-gradient(135deg,#1843f0,#3a6fd3);color:#fff;cursor:pointer;">Entrar no jogo</button>
+    <p style="margin-top:2em;font-size:1em;max-width:300px;text-align:center;">Para jogar, é necessário ativar o modo tela cheia e girar o celular para a horizontal.</p>
+  </div>
+  <div id="phone-container" style="display:none;">
     <div id="game-area">      <div id="rotate">Por favor, gire o celular para a horizontal (paisagem) para jogar!</div>
       <div id="score">Conchas: 0</div>
       <div id="wallet" style="opacity: 0 !important">Carteira: <span id="wallet-value">0</span> 🐚</div>
@@ -115,5 +121,36 @@
   <script src="js/core/collision.js"></script>
   <script src="js/core/game.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    // Função para solicitar tela cheia e orientação horizontal
+    async function enterGame() {
+      const entryScreen = document.getElementById('entry-screen');
+      const phoneContainer = document.getElementById('phone-container');
+      // Tenta entrar em tela cheia
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        await document.documentElement.webkitRequestFullscreen();
+      }
+      // Tenta bloquear orientação para landscape
+      if (screen.orientation && screen.orientation.lock) {
+        try {
+          await screen.orientation.lock('landscape');
+        } catch (e) {
+          // Pode falhar em alguns navegadores
+        }
+      }
+      entryScreen.style.display = 'none';
+      phoneContainer.style.display = '';
+    }
+    document.getElementById('enter-game-btn').addEventListener('click', enterGame);
+    // Opcional: se já estiver em tela cheia e landscape, pula a tela de entrada
+    window.addEventListener('DOMContentLoaded', function() {
+      if (window.innerWidth > window.innerHeight && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        document.getElementById('entry-screen').style.display = 'none';
+        document.getElementById('phone-container').style.display = '';
+      }
+    });
+  </script>
 </body>
 </html>
