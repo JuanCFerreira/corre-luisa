@@ -238,7 +238,6 @@ canvas {
 /* Botão de tela cheia */
 #fullscreen-btn {
   display: none !important;
-
   position: absolute;
   top: 18px;
   right: 18px;
