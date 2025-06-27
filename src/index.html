@@ -8,6 +8,62 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+        .gameover-indicators {
+          display: flex;
+          gap: 0.7em;
+          margin-bottom: 1.2em;
+          justify-content: center;
+        }
+        .gameover-indicator {
+          display: flex;
+          align-items: center;
+          font-weight: bold;
+          font-size: 1.15em;
+          border-radius: 14px;
+          padding: 0.18em 1.1em 0.18em 0.9em;
+          box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+          border: 3px solid #ffe066;
+          background: linear-gradient(135deg,#f2994a,#f2c94c);
+          color: #fff;
+          min-width: 80px;
+          justify-content: center;
+          gap: 0.5em;
+        }
+        .gameover-indicator.trophy {
+          background: linear-gradient(135deg,#f2994a,#f2c94c);
+          border-color: #ffe066;
+        }
+        .gameover-indicator.shell {
+          background: linear-gradient(135deg,#1de9b6,#00bfae);
+          border-color: #ffe066;
+        }
+        .gameover-indicator i,
+        .gameover-indicator img {
+          margin-right: 0.4em;
+          font-size: 0.8em;
+          width: 32px;
+          /* height: 26px; */
+        }
+        @media (max-width: 600px) {
+          .gameover-indicators {
+            gap: 0.4em;
+            margin-bottom: 1em;
+          }
+          .gameover-indicator {
+            font-size: 1em;
+            padding: 0.12em 0.7em 0.12em 0.7em;
+            min-width: 60px;
+            border-radius: 10px;
+          }
+          .gameover-indicator i,
+          .gameover-indicator img {
+            width: 22px;
+            height: 22px;
+            margin-right: 0.2em;
+          }
+        }
+      </style>
 </head>
 <body>
   <!-- Tela inicial de entrada -->
@@ -25,8 +81,16 @@
 
       <div id="gameover" style="display: none; flex-direction: column; align-items: center; justify-content: center; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(17,17,17,0.95); z-index: 10000; color: #fff;">
         <h2 style="font-size: 2em; margin-bottom: 0.5em; letter-spacing: 1px;margin:0">Fim da rodada!</h2>
-        <div style="font-size: 1.3em; margin-bottom: 0.7em;">Conchinhas coletadas: <span id="gameover-shells" style="font-weight: bold; color: #ffe066;">0</span> 🐚</div>
-        <div style="font-size: 1.1em; margin-bottom: 0px;">Seu recorde: <span id="gameover-best" style="font-weight: bold; color: #7ec4fa;">0</span></div>
+        <div class="gameover-indicators">
+          <div class="gameover-indicator trophy">
+            <i class="fa fa-trophy"></i>
+            <span id="gameover-best">0</span>
+          </div>
+          <div class="gameover-indicator shell">
+            <img src="../sprites/coins/1.png" alt="concha">
+            <span id="gameover-shells">0</span>
+          </div>
+        </div>
         <div style="display: flex; gap: 1em;">
           <button id="restart-btn" style="font-size:20px;padding:0.8em 2em;border:none;border-radius:8px;background:linear-gradient(135deg,#1843f0,#3a6fd3);color:#fff;cursor:pointer;">Jogar novamente</button>
           <button id="back-to-main-btn" style="font-size:20px;padding:0.8em 2em;border:none;border-radius:8px;background:linear-gradient(135deg,#222,#3a6fd3);color:#fff;cursor:pointer;">Menu principal</button>
