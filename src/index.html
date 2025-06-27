@@ -140,17 +140,38 @@
           // Pode falhar em alguns navegadores
         }
       }
-      entryScreen.style.display = 'none';
-      phoneContainer.style.display = '';
+      // Só mostra o jogo se estiver em tela cheia e paisagem
+      checkFullscreenAndOrientation();
     }
     document.getElementById('enter-game-btn').addEventListener('click', enterGame);
-    // Opcional: se já estiver em tela cheia e landscape, pula a tela de entrada
-    window.addEventListener('DOMContentLoaded', function() {
-      if (window.innerWidth > window.innerHeight && (document.fullscreenElement || document.webkitFullscreenElement)) {
-        document.getElementById('entry-screen').style.display = 'none';
-        document.getElementById('phone-container').style.display = '';
+
+    function isFullscreen() {
+      return document.fullscreenElement || document.webkitFullscreenElement;
+    }
+    function isLandscape() {
+      return window.innerWidth > window.innerHeight;
+    }
+    function showEntryScreen() {
+      document.getElementById('entry-screen').style.display = '';
+      document.getElementById('phone-container').style.display = 'none';
+    }
+    function showGameScreen() {
+      document.getElementById('entry-screen').style.display = 'none';
+      document.getElementById('phone-container').style.display = '';
+    }
+    function checkFullscreenAndOrientation() {
+      if (isFullscreen() && isLandscape()) {
+        showGameScreen();
+      } else {
+        showEntryScreen();
       }
-    });
+    }
+    // Checa ao sair do fullscreen ou mudar orientação
+    document.addEventListener('fullscreenchange', checkFullscreenAndOrientation);
+    window.addEventListener('orientationchange', checkFullscreenAndOrientation);
+    window.addEventListener('resize', checkFullscreenAndOrientation);
+    // Checa ao carregar
+    window.addEventListener('DOMContentLoaded', checkFullscreenAndOrientation);
   </script>
 </body>
 </html>
