@@ -21,9 +21,16 @@
       <div id="score">Conchas: 0</div>
       <div id="wallet" style="opacity: 0 !important">Carteira: <span id="wallet-value">0</span> 🐚</div>
       <div id="day-night-indicator" style="opacity: 0 !important"></div>
-      <div id="gameover">        <div id="finalmsg"></div>
-        <div id="new-record" style="display: none;">🏆 NOVO RECORDE! 🏆</div>
-        <button id="restart-btn">Jogar novamente</button>
+            <button id="fullscreen-btn" aria-label="Tela cheia"></button>
+
+      <div id="gameover" style="display: none; flex-direction: column; align-items: center; justify-content: center; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17,17,17,0.95); z-index: 10000; color: #fff;">
+        <h2 style="font-size: 2em; margin-bottom: 0.5em; letter-spacing: 1px;">Fim da rodada!</h2>
+        <div style="font-size: 1.3em; margin-bottom: 0.7em;">Conchinhas coletadas: <span id="gameover-shells" style="font-weight: bold; color: #ffe066;">0</span> 🐚</div>
+        <div style="font-size: 1.1em; margin-bottom: 1.5em;">Seu recorde: <span id="gameover-best" style="font-weight: bold; color: #7ec4fa;">0</span></div>
+        <div style="display: flex; gap: 1em;">
+          <button id="restart-btn" style="font-size:1.1em;padding:0.8em 2em;border:none;border-radius:8px;background:linear-gradient(135deg,#1843f0,#3a6fd3);color:#fff;cursor:pointer;">Jogar novamente</button>
+          <button id="back-to-main-btn" style="font-size:1.1em;padding:0.8em 2em;border:none;border-radius:8px;background:linear-gradient(135deg,#222,#3a6fd3);color:#fff;cursor:pointer;">Menu principal</button>
+        </div>
       </div>      <div id="startscreen">
         <!-- Informações no canto superior direito -->
         <div class="top-right-info">

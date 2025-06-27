@@ -63,51 +63,41 @@ const UIManager = {  // Atualizar o contador de pontuação
     const currentScore = Game.score;
     let bestScore = 0;
     let isNewRecord = false;
-    
     try {
       bestScore = await DatabaseManager.getBestScore();
-      console.log('Current best score:', bestScore, 'Current game score:', currentScore);
-      
-      // Verificar se é um novo recorde
       if (currentScore > bestScore) {
         isNewRecord = true;
         await DatabaseManager.saveBestScore(currentScore);
-        console.log('New record saved:', currentScore);
-        // Atualizar o best score na tela inicial também
         await this.updateBestScoreDisplay();
       }
-      
-      // Adicionar conchinhas coletadas à carteira
       if (currentScore > 0) {
-        const newWalletTotal = await DatabaseManager.addToWallet(currentScore);        console.log('Added', currentScore, 'shells to wallet. New total:', newWalletTotal);
-        // Atualizar a exibição da carteira
+        await DatabaseManager.addToWallet(currentScore);
         await this.updateWallet();
         await this.updateWalletDisplay();
       }
-      
     } catch (error) {
-      console.error('Error checking/saving best score:', error);
-      // Fallback para localStorage
       const fallbackBestScore = parseInt(localStorage.getItem('bestScore') || '0');
       if (currentScore > fallbackBestScore) {
         isNewRecord = true;
         localStorage.setItem('bestScore', currentScore.toString());
         await this.updateBestScoreDisplay();
       }
-      
-      // Fallback para carteira
-      if (currentScore > 0) {        const currentWallet = parseInt(localStorage.getItem('walletShells') || '0');
+      if (currentScore > 0) {
+        const currentWallet = parseInt(localStorage.getItem('walletShells') || '0');
         localStorage.setItem('walletShells', (currentWallet + currentScore).toString());
         await this.updateWallet();
         await this.updateWalletDisplay();
       }
     }
-    
-    document.getElementById('finalmsg').innerText =
-      (message ? message+"\n":"") + `Você coletou ${Game.score} conchinha${Game.score==1?'':'s'}!` +
-      (currentScore > 0 ? `\n+${currentScore} conchinhas adicionadas à carteira!` : '');
-    
-    // Mostrar indicador de novo recorde se aplicável
+    // Proteção para evitar erro se elemento não existir
+    const shellsElem = document.getElementById('gameover-shells');
+    if (shellsElem) shellsElem.innerText = Game.score;
+    const bestElem = document.getElementById('gameover-best');
+    if (bestElem) bestElem.innerText = Math.max(currentScore, bestScore);
+    // Oculta mensagem antiga, se existir
+    const finalMsgElem = document.getElementById('finalmsg');
+    if (finalMsgElem) finalMsgElem.innerText = '';
+    // Indicador de novo recorde
     const newRecordElement = document.getElementById('new-record');
     if (newRecordElement) {
       if (isNewRecord) {
@@ -117,7 +107,6 @@ const UIManager = {  // Atualizar o contador de pontuação
         newRecordElement.style.display = 'none';
       }
     }
-    
     document.getElementById('gameover').style.display = 'flex';
   },
   
@@ -251,7 +240,18 @@ const UIManager = {  // Atualizar o contador de pontuação
     document.getElementById('start-btn').addEventListener('click', () => this.showPowerSelection());
     document.getElementById('shop-btn').addEventListener('click', () => this.showShop());
     document.getElementById('back-to-menu-btn').addEventListener('click', () => this.hideShop());
-    
+    // Novo: botão de voltar ao menu principal na tela de gameover
+    const backToMainBtn = document.getElementById('back-to-main-btn');
+    if (backToMainBtn) {
+      backToMainBtn.addEventListener('click', () => {
+        // Esconde gameover, mostra o menu principal (startscreen)
+        document.getElementById('gameover').style.display = 'none';
+        document.getElementById('startscreen').style.display = '';
+        // Esconde o canvas e overlays do jogo
+        // Opcional: resetar variáveis do jogo
+        if (typeof Game.reset === 'function') Game.reset();
+      });
+    }
     // Configurar eventos da loja (novos itens)
     document.getElementById('buy-shield').addEventListener('click', () => this.buyItem('shield', 150));
     document.getElementById('buy-magnet').addEventListener('click', () => this.buyItem('magnet', 120));
