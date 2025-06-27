@@ -136,7 +136,8 @@ const ShellManager = {
     
     for (let i = 0; i < shellCount; i++) {
       // Calcular posição em um arco semicircular invertido
-      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)      const shellY = centerY - Math.sin(angle) * radius; // Invertendo o sinal para criar o arco invertido
+      const angle = Math.PI * (i / (shellCount - 1)); // De 0 a PI (semicírculo)
+      const shellY = centerY - Math.sin(angle) * radius; // Invertendo o sinal para criar o arco invertido
       this.shells.push({
         x: baseX + Math.cos(angle) * radius,
         y: shellY,
