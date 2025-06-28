@@ -441,11 +441,11 @@ const UIManager = {  // Atualizar o contador de pontuação
         this.hidePowerSelection();
         Game.startFromMenu();
       } else {
-        alert('Erro ao usar o item. Tente novamente.');
+        // alert('Erro ao usar o item. Tente novamente.');
       }
     } catch (error) {
       console.error('Error starting with selected power:', error);
-      alert('Erro ao usar o item. Tente novamente.');
+      // alert('Erro ao usar o item. Tente novamente.');
     }
   },
   
@@ -480,7 +480,7 @@ const UIManager = {  // Atualizar o contador de pontuação
       const currentWallet = await DatabaseManager.getWalletShells();
       
       if (currentWallet < price) {
-        alert('Conchinhas insuficientes! 🐚');
+        // alert('Conchinhas insuficientes!');
         return;
       }
       
@@ -507,13 +507,14 @@ const UIManager = {  // Atualizar o contador de pontuação
           `${itemNames[itemType]} melhorado! Agora você tem mais sorte para encontrar power-ups.` :
           `${itemNames[itemType]} adicionado ao seu inventário!`;
         
-        alert(message);
+        // alert(message);
       } else {
-        alert('Erro ao adicionar item. Tente novamente.');
+        // alert('Erro ao adicionar item. Tente novamente.');
       }
       
     } catch (error) {
-      console.error('Error buying item:', error);      alert('Erro ao comprar item. Tente novamente.');
+      console.error('Error buying item:', error);
+            // alert('Erro ao comprar item. Tente novamente.');
     }
   }
 };

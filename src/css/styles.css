@@ -357,6 +357,9 @@ canvas {
 }
 
 #shop-wallet {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: #fff;
   font-size: 1em;
   font-weight: bold;
@@ -368,6 +371,10 @@ canvas {
   border: 3px solid #ffd700;
   box-shadow: 0 4px 15px rgba(32, 178, 170, 0.5);
   backdrop-filter: blur(10px);
+}
+
+#shop-wallet img {
+  margin-left: 5px;
 }
 
 .shop-items {
@@ -404,6 +411,9 @@ canvas {
 }
 
 .shop-price {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: #ffd700;
   font-weight: bold;
   font-size: 0.8em;
@@ -413,6 +423,10 @@ canvas {
   background: rgba(255, 215, 0, 0.1);
   border-radius: 10px;
   border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.shop-price img {
+  margin-left: 5px;
 }
 
 .shop-buy-btn {
