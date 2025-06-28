@@ -156,6 +156,11 @@ const Girl = {
     } else {
       // Fallback: desenhar uma bola de praia estilizada
 
+      // Rotação contínua da bola
+      const rotation = (Date.now() / 700) % (2 * Math.PI);
+      ctx.save();
+      ctx.rotate(rotation);
+
       // Bola principal (branca)
       ctx.beginPath();
       ctx.arc(0, 0, this.w * 0.5, 0, 2 * Math.PI);
@@ -165,31 +170,34 @@ const Girl = {
       ctx.strokeStyle = "#bbb";
       ctx.stroke();
 
-      // Faixas coloridas (vermelha, azul, amarela)
+      // Faixas coloridas e brancas alternadas
       const colors = ["#ff5252", "#2196f3", "#ffe066"];
-      for (let i = 0; i < 3; i++) {
+      const totalStripes = 6; // 3 cores + 3 brancas
+      for (let i = 0; i < totalStripes; i++) {
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(
           0,
           0,
           this.w * 0.5,
-          (i * 2 * Math.PI) / 3 - Math.PI / 6,
-          ((i + 1) * 2 * Math.PI) / 3 - Math.PI / 6
+          (i * 2 * Math.PI) / totalStripes - Math.PI / 6,
+          ((i + 1) * 2 * Math.PI) / totalStripes - Math.PI / 6
         );
         ctx.closePath();
-        ctx.fillStyle = colors[i];
+        ctx.fillStyle = i % 2 === 0 ? colors[i / 2] : "#fff";
         ctx.fill();
       }
 
       // Círculo central (tampa)
       ctx.beginPath();
       ctx.arc(0, 0, this.w * 0.13, 0, 2 * Math.PI);
-      ctx.fillStyle = "#f7b731";
-      ctx.strokeStyle = "#e1a100";
+      ctx.fillStyle = "#fff";
+      ctx.strokeStyle = "grey";
       ctx.lineWidth = 2;
       ctx.fill();
       ctx.stroke();
+
+      ctx.restore();
     }
     
     ctx.restore();
