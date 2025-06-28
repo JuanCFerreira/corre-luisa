@@ -154,23 +154,42 @@ const Girl = {
         drawHeight
       );
     } else {
-      // Fallback para o desenho original se os sprites não estiverem carregados
-      ctx.fillStyle = '#ffb6c1';
-      ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
+      // Fallback: desenhar uma bola de praia estilizada
+
+      // Bola principal (branca)
       ctx.beginPath();
-      ctx.arc(0, -this.h/2.2, this.w/2.7, 0, 2 * Math.PI);
-      ctx.fillStyle = '#ffe4e1';
+      ctx.arc(0, 0, this.w * 0.5, 0, 2 * Math.PI);
+      ctx.fillStyle = "#fff";
       ctx.fill();
-      ctx.fillStyle = '#c66900';
-      ctx.fillRect(-this.w/2, this.h/2 - 8, this.w*0.20, 10);
-      ctx.fillRect(this.w/2 - this.w*0.20, this.h/2 - 8, this.w*0.20, 10);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#bbb";
+      ctx.stroke();
+
+      // Faixas coloridas (vermelha, azul, amarela)
+      const colors = ["#ff5252", "#2196f3", "#ffe066"];
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(
+          0,
+          0,
+          this.w * 0.5,
+          (i * 2 * Math.PI) / 3 - Math.PI / 6,
+          ((i + 1) * 2 * Math.PI) / 3 - Math.PI / 6
+        );
+        ctx.closePath();
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+      }
+
+      // Círculo central (tampa)
       ctx.beginPath();
-      ctx.moveTo(-this.w/2.5, -this.h/2.2);
-      ctx.lineTo(-this.w/1.8, -this.h/1.8);
-      ctx.lineTo(-this.w/4, -this.h/2.8);
-      ctx.closePath();
-      ctx.fillStyle = '#8b5c2d';
+      ctx.arc(0, 0, this.w * 0.13, 0, 2 * Math.PI);
+      ctx.fillStyle = "#f7b731";
+      ctx.strokeStyle = "#e1a100";
+      ctx.lineWidth = 2;
       ctx.fill();
+      ctx.stroke();
     }
     
     ctx.restore();

@@ -86,29 +86,7 @@ const Jacare = {
         drawHeight
       );
     } else {
-      // Fallback para o desenho original se os sprites não estiverem carregados
-      ctx.fillStyle = '#228B22';
-      ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h*0.55);
-      ctx.beginPath();
-      ctx.ellipse(this.w*0.37, -this.h*0.1, this.w*0.23, this.h*0.25, 0, 0, 2*Math.PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(-this.w/2, this.h*0.05);
-      ctx.quadraticCurveTo(-this.w*0.75, this.h*0.07, -this.w/2, this.h*0.30);
-      ctx.lineTo(-this.w/2+10, this.h*0.10);
-      ctx.closePath();
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(this.w*0.47, -this.h*0.18, this.w*0.06, 0, 2*Math.PI);
-      ctx.fillStyle = '#fff';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(this.w*0.50, -this.h*0.18, this.w*0.025, 0, 2*Math.PI);
-      ctx.fillStyle = '#111';
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(this.w*0.55, -this.h*0.03, 6, 7);
-      ctx.fillRect(this.w*0.52, 0, 6, 7);
+      // Não desenha nada se o sprite não carregar (jacaré "invisível")
     }
     
     ctx.restore();
